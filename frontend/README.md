@@ -1,4 +1,4 @@
-# teamhub-frontend
+# cattleya
 
 ## Project setup
 ```
