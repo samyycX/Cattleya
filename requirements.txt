@@ -1,0 +1,7 @@
+pyjwt~=2.8.0
+django~=4.2.13
+django-environ
+django-oss-storage
+mysqlclient
+pillow
+django-cors-headers

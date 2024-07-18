@@ -1,0 +1,6 @@
+dev.env
+production.env
+.idea
+frontend/node_modules
+frontend/dist
+frontend/.gitignore
