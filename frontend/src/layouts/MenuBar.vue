@@ -1,6 +1,7 @@
 <template>
     <div id="menubar" aria-orientation="horizontal">
-        <Toast></Toast>
+    <Toast></Toast>
+    <ConfirmPopup></ConfirmPopup>
         <MenuBar :model="items">
             <template #item="{ item, props }">
                 <router-link v-if="item.route" v-slot="{ href, navigate }" :to="item.route" custom>
@@ -33,9 +34,10 @@ import Avatar from 'primevue/avatar';
 import MenuBar from 'primevue/menubar';
 import Popover from 'primevue/popover';
 import Button from 'primevue/button';
+import Toast from 'primevue/toast';
+import ConfirmPopup from 'primevue/confirmpopup';
 import { useRouter } from 'vue-router';
 import { ref } from 'vue'
-import Toast from 'primevue/toast';
 import { useToast } from 'primevue/usetoast';
 import { useUserLogStateStore } from '@/stores/userlogstate';
 const router = useRouter()

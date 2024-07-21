@@ -1,7 +1,4 @@
 <template>
-
-    <ConfirmPopup></ConfirmPopup>
-
     <div id="info">
         <div class="avatar-container">
             <img id="avatar" :src="avatar" />
@@ -28,11 +25,11 @@
                     </div>
                     <div class="flex flex-row gap-4 info-block">
                         <p class="text-color">新密码</p>
-                        <InputText type="password" v-model="passwordChangeValues.newPassword" class="info-right" autocomplete="off" @input="monitorPasswordChange"/>
+                        <InputText type="password" v-model="passwordChangeValues.newPassword" class="info-right" autocomplete="off" @input="onPasswordChange"/>
                     </div>
                     <div class="flex flex-row gap-4 info-block">
                         <p class="text-color">再次输入新密码</p>
-                        <InputText type="password" v-model="passwordChangeValues.repeatNewPassword" class="info-right" autocomplete="off" @input="monitorPasswordChange"/>
+                        <InputText type="password" v-model="passwordChangeValues.repeatNewPassword" class="info-right" autocomplete="off" @input="onPasswordChange"/>
                     </div>
                     <p class="text-red-500">{{ passwordChangeWarning }}</p>
                     <div class="flex justify-content-end gap-2">
@@ -47,17 +44,22 @@
                 </Dialog>
             </div>
             <div class="flex flex-row gap-4 info-block">    
+                <p class="text-color">昵称</p>
+                <InputText type="text" class="info-right" v-model="user.nickname" placeholder="请输入你的昵称" />
+            </div>
+            <div class="flex flex-row gap-4 info-block">    
                 <p class="text-color">邮箱</p>
                 <InputText type="text" class="info-right" v-model="user.email" placeholder="请输入你的邮箱" />
             </div>
             <div class="flex flex-row gap-4 info-block">
                 <p class="text-color">手机号</p>
-                <InputText type="text" class="info-right" v-model="user.phone" placeholder="请输入你的手机号"/>
+                <InputText type="text" class="info-right" v-model="user.phone" placeholder="请输入你的手机号" @input="onNicknameChange"/>
             </div>
             <div class="flex flex-row gap-4 info-block">
                 <p class="text-color">注册时间</p>
                 <p class="info-right text-color">{{ formatDate(new Date(user.registered_time)) }}</p>
             </div>
+            <p class="text-red-500">{{ infoChangeWarning }}</p>
             <div class="flex flex-row flex-grow-1 gap-2 control">
                 <Button id="cancel" class="flex-1" severity="secondary" @click="confirmReset($event)">重置！</Button>
                 <Button id="submit" class="flex-1" @click="confirmSubmit($event)">提交修改！</Button>
@@ -71,7 +73,6 @@
 import InputText from 'primevue/inputtext';
 import Button from 'primevue/button';
 import Dialog from 'primevue/dialog';
-import ConfirmPopup from 'primevue/confirmpopup';
 import { useConfirm } from "primevue/useconfirm";
 import { useToast } from "primevue/usetoast";
 import axios from 'axios';
@@ -99,6 +100,8 @@ var passwordChangeSuccessDialogVisible = ref(false)
 
 var avatarWarningVisible = ref(false)
 var avatarWarning = ref("不支持此文件")
+
+var infoChangeWarning = ref("")
 
 
 const refreshUser = () => {
@@ -129,11 +132,21 @@ const resetInfo = () => {
     user.value = Object.assign({}, initialUser);
 }
 
-const monitorPasswordChange = () => {
+const onPasswordChange = () => {
     if (passwordChangeValues.value.newPassword != passwordChangeValues.value.repeatNewPassword) {
         passwordChangeWarning.value = "两次输入密码不匹配"
     } else {
         passwordChangeWarning.value = ""
+    }
+}
+
+const onNicknameChange = () => {
+    if (user.value.nickname.length > 15) {
+        infoChangeWarning.value = "用户名过长！最大15个字"
+    } else if (user.value.nickname.length == 0) {
+        infoChangeWarning.value = "用户名不能为空！"
+    } else {
+        infoChangeWarning.value = ""
     }
 }
 

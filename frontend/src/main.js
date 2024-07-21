@@ -1,5 +1,5 @@
 import { createApp } from 'vue'
-import { createMemoryHistory, createRouter, createWebHashHistory, createWebHistory } from 'vue-router'
+import { createRouter, createWebHistory } from 'vue-router'
 import App from './App.vue'
 import { createPinia } from 'pinia'
 import PrimeVue from 'primevue/config'
@@ -22,6 +22,9 @@ const routes = [
   },
   {
     name: 'login', path: '/user/login', component: () => import("./pages/user/UserLogin.vue")
+  },
+  {
+    name: 'test', path: '/test', component: () => import("./pages/activity/ActivityPage.vue")
   }
 ]
 const router = createRouter({

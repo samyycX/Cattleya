@@ -14,6 +14,7 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+from django.http import HttpResponseNotFound
 from django.urls import path, re_path, include
 from django.views.generic import TemplateView
 
@@ -22,6 +23,7 @@ from cattleya.views import favicon_view
 urlpatterns = [
     re_path(r'^api/', include("api.urls")),
     path('favicon.ico', favicon_view),
+    path('notexist/', lambda _: HttpResponseNotFound()),
     re_path("^.*(?!.css|.js|.ttf|.ico)$", TemplateView.as_view(template_name="index.html")),
 
 ]

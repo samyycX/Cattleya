@@ -1,8 +1,8 @@
 <template>
   <div class="flex flex-row comment">
-   <img class="flex avatar" :src="props.comment.author.avatar" />
+   <Avatar :image="author.avatar" />
    <div class="flex flex-column gap-1 right">
-    <p class="flex justify-content-start author-name">{{ props.comment.author.name }}</p>
+    <p class="flex justify-content-start author-name">{{ author.nickname }}</p>
     <p class="flex content">{{ props.comment.content }}</p>
     <div class="flex flex-row align-items-center gap-2">
      <p class="flex time align-items-center justify-content-center p-text-secondary">{{ time }}</p>
@@ -33,6 +33,8 @@ import ActivitySingleSubComment from "./ActivitySingleSubComment.vue"
 import Button from 'primevue/button';
 import ActivityCommentInput from './ActivityCommentInput.vue';
 import Paginator from 'primevue/paginator';
+import Avatar from 'primevue/avatar';
+import { useUserStore } from '@/stores/users';
 
 const props = defineProps({
  comment: {
@@ -45,6 +47,10 @@ const props = defineProps({
  }
 });
 
+const userStore = useUserStore()
+const author = ref({})
+userStore.getuser(props.comment.author_id).then((user) => author.value = user)
+
 const first = ref(0); // 分页器控制的初始index
 const rows = 3; // 分页行数
 const showReply = ref(false);
@@ -56,6 +62,7 @@ const time = computed(() => {
 const onReplyButtonClicked = () => {
  showReply.value = !showReply.value;
 }
+
 </script>
 
 <style scoped>

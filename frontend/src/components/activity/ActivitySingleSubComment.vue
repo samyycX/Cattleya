@@ -7,7 +7,7 @@
      <p class="flex align-items-start content">{{ props.comment.content }}</p>
     </div>
     <div class="flex flex-row align-items-center gap-2">
-     <p class="flex time align-items-center justify-content-center p-text-secondary">{{ time }}</p>
+     <p class="flex time align-items-center justify-content-center text-color">{{ time }}</p>
      <Button class="flex replybutton" label="回复" link @click="onReplyButtonClicked"/>
     </div>
     <div class="flex reply" v-if="showReply">

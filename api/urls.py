@@ -21,6 +21,9 @@ urlpatterns = [
     path('user/login', user_login),
     path('user/logout', user_logout),
     path('user/info', user_info),
-    path('user/changepassword', user_change_assword),
-    path('user/avatar', user_avatar)
+    path('user/changepassword', user_change_password),
+    path('user/avatar', user_avatar),
+    path('activity/post', activity_post),
+    path('activity/posts', activity_posts),
+    path('activity/comment', activity_comment)
 ]

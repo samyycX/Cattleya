@@ -47,6 +47,7 @@ OSS_EXPIRATION_TIME=env.int("OSS_EXPIRATION_TIME")
 
 DEFAULT_FILE_STORAGE = 'django_oss_storage.backends.OssMediaStorage'
 
+LOGIN_URL = "/notexist/"
 
 # Application definition
 

@@ -12,6 +12,7 @@ import base64
 # Create your models here.
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
+    nickname = models.CharField(verbose_name="昵称", max_length=15)
     phone = models.CharField(verbose_name="手机号", max_length=30)
     registered_time = models.DateTimeField(verbose_name="注册时间", auto_now=True)
 
@@ -22,7 +23,7 @@ class UserProfile(models.Model):
 
 
 class Avatar(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
     image = models.FileField(verbose_name="头像文件", upload_to="cattleya/avatar", null=True, blank=True)
 
     objects = models.Manager()
