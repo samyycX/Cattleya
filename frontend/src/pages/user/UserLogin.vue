@@ -26,7 +26,7 @@
         </div>
     </div>
 </template>
-
+                
 <script setup>
 
 import Button from 'primevue/button';
@@ -36,8 +36,9 @@ import Password from 'primevue/password';
 import { ref } from 'vue';
 import { useToast } from 'primevue/usetoast';
 import { useRouter } from 'vue-router';
-import { useUserLogStateStore } from '@/stores/userlogstate';
 import axios from 'axios';
+import { toastError } from '@/utils';
+import { useUserStore } from '@/stores/users';
 
 // eslint-disable-next-line
 const EMAIL_REGEX = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
@@ -45,7 +46,6 @@ const PHONE_REGEX = /^1(3\d|4[5-9]|5[0-35-9]|6[2567]|7[0-8]|8\d|9[0-35-9])\d{8}$
 
 const toast = useToast();
 const router = useRouter();
-const userLogState = useUserLogStateStore()
 
 // component variable
 const mode = ref("登录")
@@ -53,6 +53,7 @@ const modes = ref(["登录","注册"])
 const error = ref("")
 const passwordMonitorActive = ref(false)
 
+const userStore = useUserStore();
 const user = ref({
     "username": null,
     "password": null,
@@ -112,34 +113,33 @@ const submit = () => {
         toast.add({ severity: "error", "summary": "(´ﾟдﾟ`)", "detail": error.value, "life": 5000 })
         return;
     }
-
+    
     if (mode.value == "登录") {
-        axios.post("/api/user/login", user.value).then((resp) => {
+        axios.post("/api/auth/login", user.value).then(resp => {
             const result = resp.data;
             if (result.code != 200) {
-                error.value = result.msg;
-                toast.add({ severity: "error", "summary": "(´ﾟдﾟ`)", "detail": error.value, "life": 5000 })
+                toastError(toast, result.msg)
             } else {
                 toast.add({ severity: "success", "summary": "(*‘ v`*)", "detail": "登录成功，正在跳转回上一页~", "life": 3000 })
-                userLogState.login()
+                localStorage.TOKEN = result.token;
+                userStore.setCurrentUser(result.id)
                 setTimeout(router.back, 2000);
             }
-        });
+        })
     } else {
-        axios.post("/api/user/register", user.value).then((resp) => {
+        axios.post("/api/users/", user.value).then((resp) => {
             const result = resp.data;
             if (result.code != 200) {
-                error.value = result.msg;
-                toast.add({ severity: "error", "summary": "(´ﾟдﾟ`)", "detail": error.value, "life": 5000 })
+                toastError(toast, result.msg)
             } else {
                 toast.add({ severity: "success", "summary": "(*‘ v`*)", "detail": "注册成功，正在跳转回上一页~", "life": 3000 })
-                userLogState.login()
+                localStorage.TOKEN = result.token;
+                userStore.setCurrentUser(result.id)
                 setTimeout(router.back, 2000);
             }
         });
     }
 }
-
 </script>
 
 <style scoped>

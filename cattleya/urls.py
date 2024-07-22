@@ -17,6 +17,7 @@ Including another URLconf
 from django.http import HttpResponseNotFound
 from django.urls import path, re_path, include
 from django.views.generic import TemplateView
+from rest_framework import routers
 
 from cattleya.views import favicon_view
 

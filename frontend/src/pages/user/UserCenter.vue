@@ -1,7 +1,7 @@
 <template>
     <div id="info">
         <div class="avatar-container">
-            <img id="avatar" :src="avatar" />
+            <img id="avatar" :src="user.avatar" />
             <div id="avatar-overlay" @click="callRealAvatarInputDom">
                 <i class="pi pi-upload"></i>
             </div>
@@ -57,7 +57,7 @@
             </div>
             <div class="flex flex-row gap-4 info-block">
                 <p class="text-color">注册时间</p>
-                <p class="info-right text-color">{{ formatDate(new Date(user.registered_time)) }}</p>
+                <p class="info-right text-color">{{ formatDate(new Date(user.date_joined)) }}</p>
             </div>
             <p class="text-red-500">{{ infoChangeWarning }}</p>
             <div class="flex flex-row flex-grow-1 gap-2 control">
@@ -77,12 +77,10 @@ import { useConfirm } from "primevue/useconfirm";
 import { useToast } from "primevue/usetoast";
 import axios from 'axios';
 import { ref } from 'vue';
-import { formatDate } from '@/utils'
+import { formatDate, toastError, toastSuccess } from '@/utils'
 import { useRouter } from 'vue-router';
-var user = ref({})
+const user = ref({})
 var initialUser = Object.assign({}, user.value)
-
-var avatar = ref("")
 
 // component variable
 const confirm = useConfirm();
@@ -105,28 +103,8 @@ var infoChangeWarning = ref("")
 
 
 const refreshUser = () => {
-    axios.get("/api/user/info").then((resp) => {
-        const result = resp.data;
-        if (result.code == 200) {
-            user.value = result.data;
-            initialUser = Object.assign({}, user.value)
-        } else {
-            router.push({ name: "login" })
-        }
-    }).catch(() => {
-        router.push({ name: "login" })
-    })
+    axios.get(`/api/users/${localStorage.USER_ID}/`).then(resp => user.value = resp.data)
 }
-
-const refreshAvatar = () => {
-    axios.get("/api/user/avatar").then((resp) => {
-        var result = resp.data;
-        if (result.code == 200) {
-            avatar.value = result.data;
-        }
-    })
-}
-
 const resetInfo = () => {
     console.log(initialUser)
     user.value = Object.assign({}, initialUser);
@@ -186,17 +164,18 @@ const uploadAvatar = ({ target }) => {
     }
     const formData = new FormData();
     formData.append("file", file)
-    axios.post("/api/user/avatar", formData, {
+    axios.post("/api/user-avatar", formData, {
         headers: {
             'Content-Type': 'multipart/form-data'
         }
     })
     .then(resp => {
         var result = resp.data;
-        if (result.code != 200) {
-            avatarWarning.value = result.msg;
+        if (result.code != 201) {
+            toastError(toast, result.msg)
         } else {
-            refreshAvatar()
+            refreshUser()
+            toastSuccess(toast, result.msg)
         }
     })
     .catch(error => {
@@ -205,13 +184,13 @@ const uploadAvatar = ({ target }) => {
 }
 
 const submit = () => {
-    axios.post("/api/user/info", user.value).then((resp) => {
+    axios.patch(`/api/user/${localStorage.user.id}/`, user.value).then((resp) => {
         const result = resp.data;
-        if (result.code == 200) {
+        if (resp.code == 200) {
             toast.add({ severity: "success", summary: "修改成功！", life: 3000 })
             initialUser = Object.assign({}, user.value)
         } else {
-            toast.add({ severity: 'error', summary: "修改错误...", detail: result.msg, life: 3000 })
+            toastError(toast, result.msg)
         }
     })
 }
@@ -244,7 +223,6 @@ const confirmReset = (event) => {
     })
 }
 refreshUser()
-refreshAvatar()
 
 </script>
 

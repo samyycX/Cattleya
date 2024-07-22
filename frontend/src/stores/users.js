@@ -1,34 +1,33 @@
 import axios from "axios";
 import { defineStore } from "pinia";
 
-export const useUserStore = defineStore('users', {
+export const useUserStore = defineStore('user', {
     state: () => {
-        return { users: [] }
+        return { currentUser: null, users: new Map() }
     },
     actions: {
         adduser(user) {
-            this.users.push(user)
+            this.users.set(user.id, user)
+        },
+        logged() {
+            return this.currentUser == null
+        },
+        async setCurrentUser(id) {
+            this.currentUser = await this.getuser(id)
+        },
+        clearCurrentUser() {
+            this.currentUser = null;
+        },
+        async getCurrentUser() {
+            return this.currentUser
         },
         async getuser(id) {
-            var user = this.users.find((user) => user.id == id )
-            if (user != undefined) {
-                return Promise.resolve(user)
+            if (this.users.has(id)) {
+                return Promise.resolve(this.users.get(id))
             }
-            var promise = axios.get("/api/user/info", { params: { id } }).then(async (resp) => {
-                const result = resp.data;
-                if (result.code == 200) {
-                    var user = result.data;
-                    return await axios.get("/api/user/avatar", { params: { id } }).then((resp) => {
-                        const result = resp.data;
-                        if (result.code == 200) {
-                            user.avatar = result.data;
-                            if (this.users.findIndex((user) => user.id == id ) == -1 ){
-                                this.users.push(user)
-                            }
-                            return user
-                        }
-                    })
-                }
+            var promise = axios.get(`/api/users/${id}/`).then(resp => {
+                this.adduser(resp.data)
+                return resp.data
             })
             return promise
         }

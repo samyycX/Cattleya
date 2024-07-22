@@ -9,7 +9,7 @@ from django.http import JsonResponse
 from django.http.request import HttpRequest
 from django.contrib.auth import authenticate, login, logout
 from api.decorator.viewdecorator import api_controller, file_filter
-from .models import User, UserProfile, Avatar
+from .models import User, Avatar
 import uuid
 
 from ..utils.result import Result
@@ -41,16 +41,15 @@ def user_register(request: HttpRequest):
     if phone != "" and PHONE_REGEX.match(phone) is None:
         return Result.err(403, "手机号格式错误")
 
-    user = User.objects.create_user(
+    User.objects.create_user(
         username=username,
+        nickname=username,
         password=password,
         email=email,
+        phone=phone,
         is_active=0,
         is_superuser=0
     )
-
-    user_profile = UserProfile(user=user, phone=phone, nickname=username)
-    user_profile.save()
 
     return Result.success("注册成功")
 
@@ -99,24 +98,13 @@ def user_info(request: HttpRequest):
             if hasattr(user, key):
                 if key == "email" and value != "" and EMAIL_REGEX.match(value) is None:
                     return Result.err(403, "邮箱格式错误")
-                setattr(user, key, value)
-
-        user_profile = UserProfile.objects.get(user=user)
-        for key, value in request.POST.items():
-            if key in IMMUTABLE_FIELDS:
-                continue
-            if value is None:
-                continue
-            if hasattr(user_profile, key):
                 if key == "phone" and value != "" and PHONE_REGEX.match(value) is None:
                     return Result.err(403, "手机号格式错误")
                 if key == "nickname" and len(value) == 0 or len(value) > 15:
                     return Result.err(403, "昵称不合法")
-                setattr(user_profile, key, value)
+                setattr(user, key, value)
 
         user.save()
-        user_profile.save()
-
         return Result.success("修改成功")
     elif request.method == "GET":
         user_id = request.GET.get("id", None)
@@ -130,15 +118,14 @@ def user_info(request: HttpRequest):
         except User.DoesNotExist:
             return Result.err(404, "未找到该用户")
 
-        user_profile = UserProfile.objects.get(user=user)
         return Result.success(
             data={
                 "id": user.id,
                 "username": user.username,
-                "nickname": user_profile.nickname,
+                "nickname": user.nickname,
                 "email": user.email,
-                "phone": user_profile.phone,
-                "registered_time": user_profile.registered_time
+                "phone": user.phone,
+                "registered_time": user.registered_time
             }
         )
 

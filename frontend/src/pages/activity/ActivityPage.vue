@@ -1,13 +1,13 @@
 <template>
   <div class="flex align-items-center">
-    <div class="flex flex-column align-items-center gap-6 border-round posts" >
+    <div class="flex flex-column align-items-center gap-6 border-round posts">
       <ActivityPost class="flex" v-for="post in posts" :key="post.id" :post="post"/>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, watch } from 'vue';
+import { ref } from 'vue';
 import ActivityPost from '@/components/activity/ActivityPost.vue';
 import axios from 'axios';
 
@@ -50,33 +50,51 @@ import axios from 'axios';
 
 const posts = ref([])
 
-var start = 0
-var amount = 10
+var page = 1
+var noMore = false
+var getPostsLock = false;
 
-const getPosts = (start, amount) => {
-  axios.get("/api/activity/posts", {
+const getPosts = () => {
+  if (getPostsLock) {
+    return;
+  }
+  getPostsLock = true;
+  axios.get("/api/activity/posts/", {
     params: {
-      start,
-      amount
+      page,
     }
   }).then(async (resp) => {
-    const result = resp.data; 
-    if (result.code == 200) {
-      posts.value = posts.value.concat(result.data)
+    const data = resp.data; 
+    
+    console.log(data.results)
+    posts.value = posts.value.concat(data.results)
+    if (data.next == null) {
+      noMore = true;
     }
   }).finally(() => {
-    start += amount
+    page += 1
+    getPostsLock = false
   })
-} 
+}
 
-getPosts(start, amount)
+// 滚动到底的时候刷新
+window.onscroll = () => {
+  var windowHeight = document.documentElement.clientHeight || document.body.clientHeight;
+	var documentHeight = document.documentElement.scrollHeight || document.body.scrollHeight;
+	var scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+
+  if ((windowHeight + scrollTop + 2) >= documentHeight && !noMore){
+    getPosts()
+  }
+}
+getPosts()
 
 </script>
 
 <style scoped>
 .posts {
   width: 70%;
-  border: 3px solid var(--primary-color);
+  border: 1px solid var(--primary-color);
   border-top: 0;
 }
 </style>

@@ -14,16 +14,34 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-from django.urls import path
+from django.urls import path, include
+from django.views.decorators.csrf import ensure_csrf_cookie, csrf_exempt
+from rest_framework import routers
+from rest_framework.authtoken import views
+
+from .activity.comment.models import ActivityCommentViewSet
+from .activity.post.models import ActivityPostViewSet
+from .models import UserViewSet, UserLoginAPIView, UserAvatarUploadView, UserLogoutAPIView
 from .views import *
+
+router = routers.DefaultRouter()
+router.register(r'activity/posts', ActivityPostViewSet, basename="ActivityPost")
+router.register(r'activity/comments', ActivityCommentViewSet, basename="ActivityComment")
+router.register(r'users', UserViewSet, basename="User")
 urlpatterns = [
-    path('user/register', user_register),
-    path('user/login', user_login),
-    path('user/logout', user_logout),
-    path('user/info', user_info),
-    path('user/changepassword', user_change_password),
-    path('user/avatar', user_avatar),
-    path('activity/post', activity_post),
-    path('activity/posts', activity_posts),
-    path('activity/comment', activity_comment)
+    # path('user/register', user_register),
+    # path('user/login', user_login),
+    # path('user/logout', user_logout),
+    # path('user/info', user_info),
+    # path('user/changepassword', user_change_password),
+    path('avatar', csrf_exempt(user_avatar)),
+    # path('activity/post', activity_post),
+    # path('activity/posts', activity_posts),
+    # path('activity/comment', activity_comment),
+    # path('activity/like', activity_like),
+    path('auth/token', views.obtain_auth_token),
+    path('auth/logout', csrf_exempt(UserLogoutAPIView.as_view())),
+    path('auth/login', ensure_csrf_cookie(UserLoginAPIView.as_view())),
+    path('user-avatar', csrf_exempt(UserAvatarUploadView.as_view())),
+    path('', include(router.urls))
 ]

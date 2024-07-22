@@ -31,6 +31,10 @@ def activity_comment(request: HttpRequest):
         if father_comment is not None:
             try:
                 father_comment = ActivityComment.objects.get(id=father_comment)
+                if father_comment.father_comment is not None:
+                    return Result.err(403, "暂时禁止回复子评论")
+                if father_comment.owner != owner:
+                    return Result.err(403, "...你是怎么发出这样的回复的？")
             except ActivityComment.DoesNotExist:
                 return Result.err(403, "原回复不见了")
 

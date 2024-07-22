@@ -13,9 +13,9 @@
             </template>
             <template #end>
                 <div class="flex items-center gap-2">
-                    <Avatar :image="avatar" v-if="avatar != null" shape="circle"></Avatar>
-                    <Button :label="user.username" v-if="user != null" class="text-color-secondary" @click="userPopoverToggle" text></Button>
-                    <Button label="登入" v-if="user == null" icon="pi pi-sign-in" class="text-color-secondary" @click="gotoUserLogin" text></Button>
+                    <Avatar :image="userStore.currentUser.avatar" v-if="userStore.currentUser != null" shape="circle"></Avatar>
+                    <Button :label="userStore.currentUser.nickname" v-if="userStore.currentUser != null" class="text-color-secondary" @click="userPopoverToggle" text></Button>
+                    <Button label="登入" v-if="userStore.currentUser == null" icon="pi pi-sign-in" class="text-color-secondary" @click="gotoUserLogin" text></Button>
                     <Popover ref="popover">
                         <div class="flex flex-column w-10rem">
                             <Button label="用户设置" class="text-color-secondary" icon="pi pi-spin pi-cog" text @click="gotoUserSetting"></Button>
@@ -37,12 +37,12 @@ import Button from 'primevue/button';
 import Toast from 'primevue/toast';
 import ConfirmPopup from 'primevue/confirmpopup';
 import { useRouter } from 'vue-router';
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useToast } from 'primevue/usetoast';
-import { useUserLogStateStore } from '@/stores/userlogstate';
+import { useUserStore } from '@/stores/users';
 const router = useRouter()
 const toast = useToast()
-const userLogState = useUserLogStateStore()
+const userStore = useUserStore()
 const items = ref([
     {
         "label": "Home",
@@ -55,37 +55,16 @@ const items = ref([
     }
 ])
 
-const user = ref(null)
-const avatar = ref(null)
-
 //component variable
 
 const popover = ref()
 
-const refreshUser = () => {
-    axios.get("/api/user/info").then((resp) => {
-        const result = resp.data;
-        if (result.code == 200) {
-            user.value = result.data
-            axios.get("/api/user/avatar").then((resp) => {
-                const result = resp.data;
-                if (result.code == 200) {
-                    avatar.value = result.data;
-                }
-            })
-        } else {
-            user.value = null
-            avatar.value = null
-        }
-    }).catch(() => {
-        user.value = null
-        avatar.value = null
-    })
+const user = userStore.currentUser
+if (localStorage.TOKEN) {
+    axios.get("/api/users/whoami/").then(resp => userStore.setCurrentUser(resp.data.data))
 }
 
-userLogState.$subscribe(() => {
-    refreshUser()
-})
+
 
 const userPopoverToggle = (event) => {
     popover.value.toggle(event);
@@ -100,15 +79,15 @@ const gotoUserLogin = () => {
 }
 
 const userLogout = () => {
-    axios.post("/api/user/logout").then((resp) => {
+    axios.get("/api/auth/logout").then((resp) => {
         const result = resp.data;
         if (result.code == 200) {
+            localStorage.removeItem("TOKEN")
+            userStore.clearCurrentUser()
             toast.add({ severity: "success", "summary": "拜拜~", detail: "ε≡ﾍ( ´∀`)ﾉ", life: 3000 })
             router.push({ name: 'login' })
         }
-    })
-    userLogState.logout()
+    }),
+    userStore.clearCurrentUser()
 }
-
-refreshUser()
 </script>

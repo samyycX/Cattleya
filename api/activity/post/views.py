@@ -18,7 +18,7 @@ def activity_post(request: HttpRequest):
         except TypeError:
             return Result.err(403, "请求参数错误")
         except ActivityPost.DoesNotExist:
-            return Result.err(404, "未找到该帖子")
+            return Result.err(404, "未找到该动态")
 
     elif request.method == "POST":
         content = request.POST.get("content", None)
@@ -27,6 +27,25 @@ def activity_post(request: HttpRequest):
         post = ActivityPost.objects.create(author=request.user, content=content)
 
         return Result.success("上传成功")
+
+@api_controller
+@login_required
+def activity_like(request: HttpRequest):
+    post_id = request.POST.get("id", None)
+    if post_id is None:
+        return Result.err(400, "参数有误")
+    try:
+        post = ActivityPost.objects.get(id=post_id)
+
+        if ActivityPost.objects.filter(id=post_id, likes=request.user.id).exists():
+            post.likes.remove(request.user)
+        else:
+            post.likes.add(request.user)
+
+    except ActivityPost.DoesNotExist:
+        return Result.err(403, "动态不存在")
+
+    return Result.success("操作成功")
 
 
 @api_controller(methods=["GET"])

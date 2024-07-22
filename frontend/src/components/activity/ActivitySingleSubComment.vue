@@ -1,17 +1,13 @@
 <template>
   <div class="flex flex-row comment gap-2">
-   <img class="flex avatar border-round" :src="props.comment.author.avatar" />
-   <div class="flex flex-column">
+   <Avatar shape="circle" :image="author.avatar" />
+   <div class="flex flex-column gap-1">
     <div class="flex flex-row gap-3 right">
-     <p class="flex align-items-start flex-nowrap author-name">{{ props.comment.author.name }}</p>
+     <p class="flex align-items-start flex-nowrap author-name">{{ author.nickname }}</p>
      <p class="flex align-items-start content">{{ props.comment.content }}</p>
     </div>
     <div class="flex flex-row align-items-center gap-2">
-     <p class="flex time align-items-center justify-content-center text-color">{{ time }}</p>
-     <Button class="flex replybutton" label="回复" link @click="onReplyButtonClicked"/>
-    </div>
-    <div class="flex reply" v-if="showReply">
-     <ActivityCommentInput :father-comment-id="props.comment.id" :owner-id="props.ownerId"/>
+     <p class="flex time align-items-center justify-content-center p-text-secondary">{{ time }}</p>
     </div>
    </div>
   </div> 
@@ -19,8 +15,8 @@
 
 <script setup>
 import { defineProps, computed, ref } from 'vue';
-import Button from 'primevue/button';
-import ActivityCommentInput from './ActivityCommentInput.vue';
+import Avatar from 'primevue/avatar';
+import { useUserStore } from '@/stores/users';
 const props = defineProps({
  comment: {
   type: Object,
@@ -31,18 +27,14 @@ const props = defineProps({
   required: true
  }
 });
-
-const showReply = ref(false);
+const userStore = useUserStore();
+const author = ref({})
+userStore.getuser(props.comment.author_id).then((user) => author.value = user)
 const time = computed(() => {
  var date = new Date(props.comment.time);
  return `${date.getFullYear()}年${date.getMonth()}月${date.getDay()}日 ${date.getHours().toString().padStart(2, "0")}:${date.getMinutes().toString().padStart(2, "0")}:${date.getSeconds().toString().padStart(2, "0")}`
 
 })
-
-const onReplyButtonClicked = () => {
- showReply.value = !showReply.value;
-}
-
 </script>
 
 <style scoped>
@@ -53,8 +45,8 @@ const onReplyButtonClicked = () => {
 .author-name {
   margin: 0;
   text-wrap: nowrap;
-  color: var(--text-color);
   font-size: 0.9rem;
+  color: var(--surface-400);
 }
 .content {
  margin: 0;
@@ -62,10 +54,12 @@ const onReplyButtonClicked = () => {
  color: var(--text-color);
  font-size: 0.9rem;
  justify-content: center;
+ padding: 0;
 }
 .time {
  margin: 0;
  font-size: 0.75rem;
+ color: var(--surface-400);
 }
 .replybutton {
  font-size: 0.75rem;

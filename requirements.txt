@@ -5,3 +5,5 @@ django-oss-storage
 mysqlclient
 pillow
 django-cors-headers
+djangorestframework
+markdown

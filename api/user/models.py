@@ -1,29 +1,22 @@
 import os.path
 
 import oss2
-from django.contrib.auth.models import User
 from django.db import models
 from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
+from rest_framework import viewsets, serializers
+
 import cattleya.settings as settings
 import base64
 
+from api.models import User
+
 
 # Create your models here.
-class UserProfile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
-    nickname = models.CharField(verbose_name="昵称", max_length=15)
-    phone = models.CharField(verbose_name="手机号", max_length=30)
-    registered_time = models.DateTimeField(verbose_name="注册时间", auto_now=True)
-
-    objects = models.Manager()
-
-    class Meta:
-        verbose_name = "用户附加个人资料"
 
 
 class Avatar(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="re_avatar_user")
     image = models.FileField(verbose_name="头像文件", upload_to="cattleya/avatar", null=True, blank=True)
 
     objects = models.Manager()
