@@ -76,16 +76,18 @@ import Dialog from 'primevue/dialog';
 import { useConfirm } from "primevue/useconfirm";
 import { useToast } from "primevue/usetoast";
 import axios from 'axios';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { formatDate, toastError, toastSuccess } from '@/utils'
 import { useRouter } from 'vue-router';
+import { useUserStore } from '@/stores/users';
 const user = ref({})
-var initialUser = Object.assign({}, user.value)
+var initialUser = computed(() => Object.assign({}, user.value))
 
 // component variable
 const confirm = useConfirm();
 const toast = useToast();
 const router = useRouter();
+const userStore = useUserStore()
 
 var passwordChangeDialogVisible = ref(false)
 var passwordChangeWarning = ref("")
@@ -103,7 +105,7 @@ var infoChangeWarning = ref("")
 
 
 const refreshUser = () => {
-    axios.get(`/api/users/${localStorage.USER_ID}/`).then(resp => user.value = resp.data)
+    userStore.getCurrentUser().then(u => user.value = u)
 }
 const resetInfo = () => {
     console.log(initialUser)
@@ -134,18 +136,18 @@ const changePassword = () => {
         return
     }
     axios.post(
-        "/api/user/changepassword",
+        "/api/users/change_password/",
         {
-            "oldPassword": passwordChangeValues.value.oldPassword,
-            "newPassword": passwordChangeValues.value.newPassword
+            "old_password": passwordChangeValues.value.oldPassword,
+            "new_password": passwordChangeValues.value.newPassword
         }
     ).then((resp) => {
         const result = resp.data;
         if (result.code != 200) {
-            passwordChangeWarning.value = result.msg
+            toastError(toast, result.msg)
         } else {
             passwordChangeDialogVisible.value = false
-            passwordChangeSuccessDialogVisible.value = true
+            toastSuccess(toast, result.msg)
         }
     })
 }
@@ -184,7 +186,7 @@ const uploadAvatar = ({ target }) => {
 }
 
 const submit = () => {
-    axios.patch(`/api/user/${localStorage.user.id}/`, user.value).then((resp) => {
+    axios.patch(`/api/users/${localStorage.user.id}/`, user.value).then((resp) => {
         const result = resp.data;
         if (resp.code == 200) {
             toast.add({ severity: "success", summary: "修改成功！", life: 3000 })

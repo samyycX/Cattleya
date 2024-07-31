@@ -26,7 +26,7 @@ const routes = [
     name: 'login', path: '/user/login', component: () => import("./pages/user/UserLogin.vue")
   },
   {
-    name: 'test', path: '/test', component: () => import("./pages/activity/ActivityPage.vue")
+    name: 'test', path: '/test', component: () => import("./pages/user/UserLogin2.vue")
   }
 ]
 const router = createRouter({
@@ -59,18 +59,18 @@ axios.interceptors.response.use(
   }
 )
 
-app.use(PrimeVue, {
-  theme: {
-    preset: Nora,
-    options: {
-      prefix: '',
-      darkModeSelector: 'system'
-    }
-  }
-})
-
-
-
+// app.use(PrimeVue, {
+//   theme: {
+//     preset: Nora,
+//     options: {
+//       prefix: '',
+//       darkModeSelector: 'system'
+//     }
+//   }
+// })
+//
+//
+//
 app.use(pinia)
 app.use(ConfirmationService);
 app.use(ToastService);

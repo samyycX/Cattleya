@@ -5,15 +5,15 @@
       <p class="flex justify-content-start author-name">{{ author.nickname }}</p>
       <p class="flex content">{{ props.comment.content }}</p>
       <div class="flex flex-row align-items-center gap-2">
-        <p class="flex time align-items-center justify-content-center">{{ time }}</p>
+        <p class="flex information align-items-center justify-content-center">{{ `#${props.index} ${time}` }}</p>
         <Button class="flex replybutton" label="回复" link @click="onReplyButtonClicked"/>
       </div>
       <div class="flex reply" v-if="showReply">
-        <ActivityCommentInput :father-comment-id="props.comment.id" :owner-id="props.ownerId" />
+        <ActivityCommentInput :father-comment-id="props.comment.id" :owner-id="props.ownerId" @goto-last-page="gotoLastPage"/>
       </div>
-      <div class="flex flex-column gap-2" v-if="props.comment.subComments">
-        <div class="flex" v-for="comment in props.comment.subComments.slice(first, first+rows)" :key="comment.id">
-          <ActivitySingleSubComment class="flex" :comment="comment" :owner-id="props.ownerId"></ActivitySingleSubComment>
+      <div class="flex flex-column gap-2" v-if="props.comment.subComments" @wheel="onWheel">
+        <div class="flex" v-for="(comment, i) in props.comment.subComments.slice(first, first+rows)" :key="comment.id">
+          <ActivitySingleSubComment class="flex" :comment="comment" :index="first+i+1" :owner-id="props.ownerId"></ActivitySingleSubComment>
         </div> 
         <Paginator
         class="flex"
@@ -28,13 +28,14 @@
 </template>
 
 <script setup>
-import { defineProps, computed, ref } from 'vue';
+import { defineProps, computed, ref, defineEmits } from 'vue';
 import ActivitySingleSubComment from "./ActivitySingleSubComment.vue"
 import Button from 'primevue/button';
 import ActivityCommentInput from './ActivityCommentInput.vue';
 import Paginator from 'primevue/paginator';
 import Avatar from 'primevue/avatar';
 import { useUserStore } from '@/stores/users';
+import { formatActivityDate } from './ActivityUtils';
 
 const props = defineProps({
   comment: {
@@ -44,23 +45,52 @@ const props = defineProps({
   ownerId: {
     type: Number,
     required: true
+  },
+  index: {
+    type: Number,
+    required: true,
   }
 });
-
+const emit = defineEmits(['cancel-next-wheel'])
 const userStore = useUserStore()
 const author = ref({})
-userStore.getuser(props.comment.author_id).then((user) => author.value = user)
+userStore.getuser(props.comment.author).then((user) => author.value = user)
+const time = computed(() => formatActivityDate(new Date(props.comment.time)))
 
 const first = ref(0); // 分页器控制的初始index
 const rows = 3; // 分页行数
 const showReply = ref(false);
-const time = computed(() => {
-  var date = new Date(props.comment.time);
-  return `${date.getFullYear()}年${date.getMonth()}月${date.getDay()}日 ${date.getHours().toString().padStart(2, "0")}:${date.getMinutes().toString().padStart(2, "0")}:${date.getSeconds().toString().padStart(2, "0")}`
-})
 
 const onReplyButtonClicked = () => {
   showReply.value = !showReply.value;
+}
+
+const gotoLastPage = () => {
+  first.value = parseInt(props.comment.subComments.length / rows) * rows
+}
+const gotoNextPage = () => {
+  if (first.value + rows >= props.comment.subComments.length) {
+    return
+  }
+  first.value += rows
+}
+const gotoPrevPage = () => {
+  if (first.value - rows < 0) {
+    return
+  }
+  first.value -= rows
+}
+
+const onWheel = (e) => {
+  if (e.wheelDeltaY > 0) {
+    e.preventDefault()
+    gotoPrevPage()
+    emit('cancel-next-wheel')
+  } else if (e.wheelDeltaY < 0) {
+    e.preventDefault()
+    gotoNextPage()
+    emit('cancel-next-wheel')
+  }
 }
 
 </script>
@@ -84,7 +114,7 @@ const onReplyButtonClicked = () => {
   text-align: left;
   color: var(--text-color);
 }
-.time {
+.information {
   margin: 0;
   font-size: 0.75rem;
   color: var(--surface-400);

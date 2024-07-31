@@ -7,7 +7,7 @@
      <p class="flex align-items-start content">{{ props.comment.content }}</p>
     </div>
     <div class="flex flex-row align-items-center gap-2">
-     <p class="flex time align-items-center justify-content-center p-text-secondary">{{ time }}</p>
+     <p class="flex information align-items-center justify-content-center p-text-secondary">{{ `#${props.index} ${time}` }}</p>
     </div>
    </div>
   </div> 
@@ -17,6 +17,7 @@
 import { defineProps, computed, ref } from 'vue';
 import Avatar from 'primevue/avatar';
 import { useUserStore } from '@/stores/users';
+import { formatActivityDate } from './ActivityUtils';
 const props = defineProps({
  comment: {
   type: Object,
@@ -25,16 +26,16 @@ const props = defineProps({
  ownerId: {
   type: Number,
   required: true
+ },
+ index: {
+  type: Number,
+  required: true
  }
 });
 const userStore = useUserStore();
 const author = ref({})
-userStore.getuser(props.comment.author_id).then((user) => author.value = user)
-const time = computed(() => {
- var date = new Date(props.comment.time);
- return `${date.getFullYear()}年${date.getMonth()}月${date.getDay()}日 ${date.getHours().toString().padStart(2, "0")}:${date.getMinutes().toString().padStart(2, "0")}:${date.getSeconds().toString().padStart(2, "0")}`
-
-})
+userStore.getuser(props.comment.author).then((user) => author.value = user)
+const time = computed(() => formatActivityDate(new Date(props.comment.time)))
 </script>
 
 <style scoped>
@@ -56,7 +57,7 @@ const time = computed(() => {
  justify-content: center;
  padding: 0;
 }
-.time {
+.information {
  margin: 0;
  font-size: 0.75rem;
  color: var(--surface-400);

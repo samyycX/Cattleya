@@ -2,10 +2,10 @@
   <div class="flex flex-column post gap-1">
     <Card>
       <template #title>
-        <div class="flex author">
+        <div class="flex author gap-3">
           <Avatar :image="author.avatar" shape="circle" />
           <p class="flex text-color align-items-center author-name">{{ author.nickname }}</p>
-          <p class="flex align-items-center time">{{ nowGmtTime }}</p>
+          <p class="flex align-items-center information">{{ `#${props.post.id} ${time}` }}</p>
           
         </div>
       </template>
@@ -16,7 +16,13 @@
         <div class="flex interaction gap-2">
           <Button :icon='liked ? "pi pi-thumbs-up-fill" : "pi pi-thumbs-up"' @click="onLike" text />
           <Button :icon='showComments ? "pi pi-eye-slash" : "pi pi-eye"' :label='showComments ? "隐藏评论" : "显示评论"' @click="onShowComments" text />
-          <p v-if="post.likes.length != 0" class="flex other-likes p-text-secondary">{{ likesName + " 赞了" }}</p>
+          <div class="flex flex-row other-likes">
+            <p>{{ likes.length == 0 ? "暂无人点赞" : "点赞：" }}</p>
+            <AvatarGroup v-if="likes.length != 0">
+              <Avatar v-for="user in likes" :key="user.id" :image="user.avatar" shape="circle" :title="user.nickname"/>
+              <Avatar v-if="likesCount > MAX_DISPLAY_LIKES" :label="'+'+(likesCount - MAX_DISPLAY_LIKES)" shape="circle"></Avatar>
+            </AvatarGroup>
+          </div>
         </div>
         <div class="flex comments" v-if="showComments">
           <ActivityComment :comments="comments" :owner-id="post.id"></ActivityComment> 
@@ -28,42 +34,54 @@
 </template>
 
 <script setup>
-import { computed, ref, watch, defineProps } from 'vue'
+import { computed, ref, watch, defineProps, provide } from 'vue'
 import Button from 'primevue/button'
 import Avatar from 'primevue/avatar';
+import AvatarGroup from 'primevue/avatargroup';
 import Card from 'primevue/card';
 import ActivityComment from './ActivityComment.vue';
 import { useUserStore } from '@/stores/users';
 import axios from 'axios';
 import { useToast } from 'primevue/usetoast';
 import { toastError, toastSuccess } from '@/utils';
+import { formatActivityDate } from './ActivityUtils';
+
+const MAX_DISPLAY_LIKES = 3
 
 const toast = useToast()
 const userStore = useUserStore()
 
 const props = defineProps(["post"])
 const post = ref(props.post)
+const time = computed(() => formatActivityDate(new Date(post.value.time)))
+
 const rawComments = ref([])
 const comments = ref([])
-const likesName = ref([])
+
+const liked = ref(false)
+userStore.getCurrentUser().then((user) => liked.value = post.value.likes.includes(user.id))
+const showComments = ref(false)
 
 const author = ref({})
-
 userStore.getuser(post.value.author).then((user) => author.value = user)
 
-
-watch(rawComments,
-(newRawComments, oldRawComments) => { // 从数据记录构造评论树
-  if (oldRawComments != undefined && oldRawComments.length == newRawComments.length) { // 避免不必要的更新
-    return;
+const likes = ref([])
+const likesCount = computed(() => {
+  if (post.value) {
+    return post.value.likes.length
   }
+  return 0
+})
+
+const refreshRawComments = () => {
   var result = new Map();
   
-  newRawComments.forEach((comment) => {
-    if (comment.father_comment_id == null) { //代表这个是最外层的评论
+  rawComments.value.forEach((comment) => {
+    if (comment.father_comment == null) { //代表这个是最外层的评论
       result.set(comment.id, comment)
+      comment.subComments = undefined
     } else { // 楼中楼
-      var father = result.get(comment.father_comment_id) // 找到他的父评论，根据时间顺序，理论上父评论的记录肯定在子评论前
+      var father = result.get(comment.father_comment) // 找到他的父评论，根据时间顺序，理论上父评论的记录肯定在子评论前
       if (father.subComments != undefined) { // 加入父评论
         father.subComments.push(comment) 
       } else {
@@ -71,20 +89,17 @@ watch(rawComments,
       }
     }
   })
-  console.log([...result.values()])
   comments.value = [...result.values()];
-},
-//{ immediate: true } // 立刻刷新
-)
+}
 
-const nowGmtTime = computed(() => {
-  var date = new Date(post.value.time)
-  return `${date.getFullYear()}年${date.getMonth()+1}月${date.getDate()}日 ${date.getHours().toString().padStart(2, "0")}:${date.getMinutes().toString().padStart(2, "0")}:${date.getSeconds().toString().padStart(2, "0")}`
-})
+// 给评论输入的子组件用，方便输入之后直接刷新
+const pushRawComment = (rawComment) => {
+  rawComments.value.push(rawComment)
+  refreshRawComments()
+  
+}
+provide('push-raw-comment', pushRawComment)
 
-const liked = ref(false)
-userStore.getCurrentUser().then((user) => liked.value = post.value.likes.includes(user.id))
-var showComments = ref(false)
 const onLike = () => {
   axios.post(`/api/activity/posts/${post.value.id}/like/`).then((resp) => {
     const result = resp.data;
@@ -101,7 +116,7 @@ const onLike = () => {
       toastError(toast, result.msg)
     }
   }).finally(() => {
-    refreshLikesName()
+    refreshLikes()
   })
 }
 
@@ -110,19 +125,17 @@ const onShowComments = () => {
 }
 
 const refreshComments = () => {
-  axios.get("/api/activity/comment", { params: { owner: post.value.id } }).then((resp) => {
-    const result = resp.data;
-    if (result.code == 200) {
-      rawComments.value = result.data;
-    }
+  axios.get("/api/activity/comments/list_by_owner/", { params: { owner: post.value.id } }).then((resp) => {
+    rawComments.value = resp.data;
+    refreshRawComments()
   })
 }
 
-const refreshLikesName = async () => {
-  likesName.value = await Promise.all(post.value.likes.map(async id => (await userStore.getuser(id)).nickname))
+const refreshLikes = async () => {
+  likes.value = await Promise.all(post.value.likes.slice(0, MAX_DISPLAY_LIKES).map(async id => (await userStore.getuser(id))))
 }
 
-refreshLikesName()
+refreshLikes()
 watch(post, refreshComments)
 refreshComments()
 
@@ -133,7 +146,7 @@ refreshComments()
   padding-left: 1rem;
   width: 100%;
 }
-.time {
+.information {
   margin: 0;
   margin-left: auto; 
   margin-right: 1em;
@@ -142,7 +155,6 @@ refreshComments()
 }
 .author-name {
   margin: 0;
-  margin-left: 1rem;
   padding: 0;
   font-size: 1.2rem;
   line-height: 0;
@@ -151,7 +163,9 @@ refreshComments()
   text-align: left;
 }
 .other-likes {
-  font-size: 0.9rem;
+  font-size: 0.8rem;
+  color: var(--surface-400);
+  margin-left: auto;
 }
 .comments {
   margin-left: 1.5rem;

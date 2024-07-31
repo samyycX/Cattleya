@@ -17,7 +17,7 @@ export function toastError(toast, msg) {
 }
 
 export function toastSuccess(toast, msg) {
-    toast.add({ severity: 'success', summary: msg, life: 3000 })
+    toast.add({ severity: 'success', summary: msg[0], life: 3000 })
 }
 
 // export async function getCurrentUser() {

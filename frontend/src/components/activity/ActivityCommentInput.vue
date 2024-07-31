@@ -6,7 +6,7 @@
 </template>
 
 <script setup>
-import { ref, defineProps } from 'vue';
+import { ref, defineProps, inject, defineEmits } from 'vue';
 import InputText from 'primevue/inputtext';
 import Button from 'primevue/button';
 import { useConfirm } from "primevue/useconfirm";
@@ -17,6 +17,8 @@ const confirm = useConfirm();
 const toast = useToast();
 
 const comment = ref(null)
+const pushRawComment = inject('push-raw-comment')
+const emit = defineEmits(['goto-last-page'])
 
 const props = defineProps({
   fatherCommentId: { // 回复某回复的id，因为可能是直接回复帖子的所以required是false
@@ -28,18 +30,19 @@ const props = defineProps({
     required: true
   }
 }) 
-
 const submit = () => {
-  // TODO: 提交
-  axios.post("/api/activity/comment", {
+  const body = {
     content: comment.value,
-    fatherComment: props.fatherCommentId,
+    father_comment: props.fatherCommentId,
     owner: props.ownerId,
-  }).then((resp) => {
+  }
+  axios.post("/api/activity/comments/", body).then((resp) => {
     const result = resp.data;
-    if (result.code == 200) {
+    if (result.code == 201) {
       toast.add({ severity: 'success', summary: "ξ( ✿＞◡❛)", detail: "回复成功~", life: 3000 })
       comment.value = null;
+      pushRawComment(result.data)
+      emit('goto-last-page')
     } else {
       toast.add({ severity: 'error', summary: result.msg, life: 3000})
     }

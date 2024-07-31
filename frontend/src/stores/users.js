@@ -19,6 +19,10 @@ export const useUserStore = defineStore('user', {
             this.currentUser = null;
         },
         async getCurrentUser() {
+            if (this.currentUser == null && localStorage.TOKEN) {
+                const id = (await axios.get(`/api/users/whoami/`)).data.data
+                await this.setCurrentUser(id)
+            }
             return this.currentUser
         },
         async getuser(id) {
