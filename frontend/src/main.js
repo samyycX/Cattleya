@@ -8,8 +8,9 @@ import ToastService from 'primevue/toastservice';
 import Aura from '@primevue/themes/aura'
 import Lara from '@primevue/themes/lara'
 import Nora from '@primevue/themes/nora'
-import 'primeflex/primeflex.css'
+// import 'primeflex/primeflex.css'
 import 'primeicons/primeicons.css'
+import './assets/css/index.css'
 import axios from 'axios'
 
 const app = createApp(App)
@@ -20,13 +21,16 @@ const routes = [
     name: 'mainpage', path: '/', component: () => import("./pages/MainPage.vue")
   },
   {
-    name: 'usercenter', path: '/user/center', component: () => import("./pages/user/UserCenter.vue")
+    name: 'usercenter', path: '/user/center', component: () => import("./pages/user/UserCenter2.vue")
   },
   {
-    name: 'login', path: '/user/login', component: () => import("./pages/user/UserLogin.vue")
+    name: 'login', path: '/user/login', component: () => import("./pages/user/UserLogin2.vue")
   },
   {
-    name: 'test', path: '/test', component: () => import("./pages/user/UserLogin2.vue")
+    name: 'test', path: '/test', component: () => import("./pages/blog/BlogEditPage.vue")
+  },
+  {
+    name: 'test2', path: '/test2', component: () => import("./pages/blog/BlogPage.vue")
   }
 ]
 const router = createRouter({
@@ -59,18 +63,18 @@ axios.interceptors.response.use(
   }
 )
 
-// app.use(PrimeVue, {
-//   theme: {
-//     preset: Nora,
-//     options: {
-//       prefix: '',
-//       darkModeSelector: 'system'
-//     }
-//   }
-// })
-//
-//
-//
+app.use(PrimeVue, {
+  theme: {
+    preset: Nora,
+    options: {
+      prefix: '',
+      darkModeSelector: 'system'
+    }
+  }
+})
+
+
+
 app.use(pinia)
 app.use(ConfirmationService);
 app.use(ToastService);

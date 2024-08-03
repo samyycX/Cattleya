@@ -59,7 +59,7 @@ class UserSerializer(serializers.ModelSerializer):
         max_length=15,
         allow_blank=False,
         required=True,
-        validators=[UniqueValidator(queryset=User.objects.all(), message=Emoticon.err("昵称已存在"))],
+        validators=[UniqueValidator(queryset=User.objects.all(), message="昵称已存在")],
         error_messages={
             "blank": "昵称不能为空",
             "max_length": "昵称不能超过15个字",
@@ -182,7 +182,6 @@ class UserAvatarUploadView(APIView):
             return Result.err(msg="不支持此文件格式", code=400)
         new_filename = uuid.uuid4()
         full_filename = f"cattleya/avatar/{new_filename}.{suffix}"
-        print(full_filename)
 
         auth = oss2.Auth(settings.OSS_ACCESS_KEY_ID, settings.OSS_ACCESS_KEY_SECRET)
         bucket = oss2.Bucket(auth, settings.OSS_ENDPOINT, settings.OSS_BUCKET_NAME)
@@ -194,7 +193,6 @@ class UserAvatarUploadView(APIView):
                                                           oss2.compat.to_bytes(full_filename))),
                                                       oss2.compat.to_string(base64.urlsafe_b64encode(
                                                           oss2.compat.to_bytes(settings.OSS_BUCKET_NAME))))
-        print(full_filename)
         bucket.put_object(full_filename, file)
         bucket.process_object(full_filename, process)
         request.user.avatar = full_filename
@@ -212,6 +210,8 @@ class UserViewSet(viewsets.ModelViewSet):
         "partial_update": (IsOwner,),
         "destroy": (IsAdminUser,),
         "create": (AllowAny,),
+        "whoami": (IsAuthenticated,),
+        "change_password": (IsAuthenticated,),
     }
 
     def get_permissions(self):
@@ -227,9 +227,22 @@ class UserViewSet(viewsets.ModelViewSet):
             self.serializer_class = UserSerializer
         return self.serializer_class
 
-    @action(detail=False, methods=["GET"])
+    @action(detail=False, methods=["get"])
     def whoami(self, request):
         return Result.ok(code=200, data=request.user.id)
+
+    @action(detail=False, methods=["post"])
+    def change_password(self, request: Request):
+        old_password = request.data.get("old_password", "")
+        new_password = request.data.get("new_password", None)
+        if new_password is None or new_password == "":
+            raise serializers.ValidationError("新密码不能为空")
+        user = authenticate(username=request.user.username, password=old_password)
+        if user is None:
+            raise serializers.ValidationError("旧密码错误")
+        user.set_password(new_password)
+        user.save()
+        return Result.ok(msg="修改成功")
 
 
 class UserLoginAPIView(APIView):
@@ -242,9 +255,9 @@ class UserLoginAPIView(APIView):
         user = authenticate(username=serializer.initial_data['username'], password=serializer.initial_data['password'])
         if user:
             token, created = Token.objects.get_or_create(user=user)
-            return Response({"code": 200, "token": token.key, "id": user.id, "msg": [Emoticon.success("登录成功")]},
+            return Response({"code": 200, "token": token.key, "id": user.id, "msg": ["登录成功"]},
                             status=status.HTTP_200_OK)
-        return Response({"code": 400, "msg": [Emoticon.err("用户名或密码有误")]}, status=status.HTTP_200_OK)
+        raise serializers.ValidationError("用户名或密码有误")
 
 
 class UserLogoutAPIView(APIView):

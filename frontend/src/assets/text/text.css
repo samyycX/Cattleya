@@ -2,3 +2,18 @@
   font-family: "PingFang SC";
   src: url("./PingFangSCRegular.ttf");
 }
+
+@font-face {
+  font-family: "LXGWNeoXiHei";
+  src: url("./LXGWNeoXiHei.ttf");
+}
+
+@font-face {
+  font-family: "LXGWWenKaiMono Regular";
+  src: url("LXGWWenKaiMono-Regular.ttf");
+}
+@font-face { 
+  font-family: "LXGWWenKai Regular";
+  src: url("LXGWWenKai-Regular.ttf");
+}
+

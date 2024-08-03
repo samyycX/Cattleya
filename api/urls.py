@@ -21,6 +21,7 @@ from rest_framework.authtoken import views
 
 from .activity.comment.models import ActivityCommentViewSet
 from .activity.post.models import ActivityPostViewSet
+from .file.models import FileViewSet
 from .models import UserViewSet, UserLoginAPIView, UserAvatarUploadView, UserLogoutAPIView
 from .views import *
 
@@ -28,13 +29,13 @@ router = routers.DefaultRouter()
 router.register(r'activity/posts', ActivityPostViewSet, basename="ActivityPost")
 router.register(r'activity/comments', ActivityCommentViewSet, basename="ActivityComment")
 router.register(r'users', UserViewSet, basename="User")
+router.register(r'files', FileViewSet, basename="File")
 urlpatterns = [
     # path('user/register', user_register),
     # path('user/login', user_login),
     # path('user/logout', user_logout),
     # path('user/info', user_info),
     # path('user/changepassword', user_change_password),
-    path('avatar', csrf_exempt(user_avatar)),
     # path('activity/post', activity_post),
     # path('activity/posts', activity_posts),
     # path('activity/comment', activity_comment),

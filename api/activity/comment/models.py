@@ -89,6 +89,7 @@ class ActivityCommentViewSet(viewsets.ModelViewSet):
     model = ActivityComment
     queryset = ActivityComment.objects.all()
     authentication_classes = (TokenAuthentication,)
+    pagination_class = None
     permissions_classes_by_action = {
         "list": (IsAdminUser,),
         "retrieve": (IsAuthenticated,),
@@ -127,7 +128,7 @@ class ActivityCommentViewSet(viewsets.ModelViewSet):
         )
         comment.save()
 
-        return Result.ok(code=201, msg="评论成功")
+        return Result.ok(code=201, msg="评论成功", data=ActivityCommentSerializer(comment).data)
 
     @action(detail=False, methods=["get"])
     def list_by_owner(self, request: Request):

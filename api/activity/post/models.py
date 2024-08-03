@@ -105,7 +105,7 @@ class ActivityPostViewSet(viewsets.ModelViewSet):
         )
         post.save()
 
-        return Result.ok(code=201, msg="发布成功")
+        return Result.ok(code=201, msg="发布成功", data=ActivityPostSerializer(post).data)
 
     @action(detail=True, methods=["post"])
     def like(self, request: Request, pk=None):
