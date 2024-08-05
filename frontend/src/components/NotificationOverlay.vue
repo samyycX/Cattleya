@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col notification absolute left-1/2 top-3 -translate-x-[16rem] w-[32rem]">
+  <div class="flex flex-col notification absolute left-1/2 top-3 -translate-x-[16rem] w-[32rem] h-fit z-[999]">
     <TransitionGroup name="notifications" tag="div">
       <div v-for="notification in notificationStore.notifications.values()" :key="notification.uid" :style="'background-color: ' + getColor(notification)" class="flex flex-row w-full bg-theme-2 pl-2 mb-2">
         <CheckIcon class="size-6 text-theme-1" v-if="notification.type == 'success' "/>

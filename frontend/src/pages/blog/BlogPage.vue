@@ -1,6 +1,6 @@
 <template>
-  <div class="block w-full bg-theme-3 h-max">
-    <div class="w-7/12 px-12 pt-7 mx-auto max-w-none prose prose-cattleya prose-xl text-left bg-theme-1 h-max">
+  <div class="block w-full bg-theme-0 h-max">
+    <div class="w-7/12 px-12 pt-7 mx-auto max-w-none prose prose-cattleya prose-xl text-left bg-theme-0 h-max">
       <BlogMdxRender :content="mdx" />  
     </div>
   </div>
@@ -19,6 +19,8 @@ const mdx = ref(`
 #### 4
 ##### 5
 ###### 6
+
+Foot只支持Sixel，不支持Kitty和iTerm的图片协议。在fastfetch中设置type为Sixel时，图片的透明度会失效。经过大量的冲浪，我找到了一个解决方案
 
 > Block quote
 

@@ -10,10 +10,18 @@
 
 @font-face {
   font-family: "LXGWWenKaiMono Regular";
-  src: url("LXGWWenKaiMono-Regular.ttf");
+  src: url("./LXGWWenKaiMono-Regular.ttf");
 }
 @font-face { 
   font-family: "LXGWWenKai Regular";
-  src: url("LXGWWenKai-Regular.ttf");
+  src: url("./LXGWWenKai-Regular.ttf");
+}
+@font-face {
+  font-family: "Cascadia Mono Regular";
+  src: url("./CascadiaMono-Regular.woff2");
+}
+@font-face {
+  font-family: "Source Han Sans";
+  src: url("./SourceHanSansSC-VF.otf.woff2");
 }
 

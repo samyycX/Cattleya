@@ -18,6 +18,7 @@ from rest_framework.response import Response
 from rest_framework.validators import UniqueValidator
 from rest_framework.views import APIView
 
+from api.renderer import JSONResponseRenderer
 from api.utils.emoticon import Emoticon
 from api.utils.result import Result
 from cattleya import settings
@@ -203,6 +204,7 @@ class UserAvatarUploadView(APIView):
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     authentication_classes = (TokenAuthentication,)
+    renderer_classes = (JSONResponseRenderer,)
     permissions_classes_by_action = {
         "list": (IsAdminUser,),
         "retrieve": (IsAuthenticated,),

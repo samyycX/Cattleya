@@ -21,6 +21,7 @@ from rest_framework.authtoken import views
 
 from .activity.comment.models import ActivityCommentViewSet
 from .activity.post.models import ActivityPostViewSet
+from .blog.models import BlogViewSet, BlogTagViewSet
 from .file.models import FileViewSet
 from .models import UserViewSet, UserLoginAPIView, UserAvatarUploadView, UserLogoutAPIView
 from .views import *
@@ -30,6 +31,8 @@ router.register(r'activity/posts', ActivityPostViewSet, basename="ActivityPost")
 router.register(r'activity/comments', ActivityCommentViewSet, basename="ActivityComment")
 router.register(r'users', UserViewSet, basename="User")
 router.register(r'files', FileViewSet, basename="File")
+router.register(r'blogs', BlogViewSet, basename="Blog")
+router.register(r'blog-tags', BlogTagViewSet, basename="BlogTag")
 urlpatterns = [
     # path('user/register', user_register),
     # path('user/login', user_login),

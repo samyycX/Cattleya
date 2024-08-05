@@ -3,6 +3,8 @@
 @tailwind utilities;
 
 :root, #root, #docs-root {
+  --theme-0: #EDEAE1;
+  --theme-0: #faf7f0;
   --theme-1: #E5E4CE;
   --theme-2: #BED0A6;
   --theme-3: #6C9585;

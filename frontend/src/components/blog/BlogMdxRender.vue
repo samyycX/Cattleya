@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div id="content-container">
     <Content />
   </div>
 </template>
@@ -10,12 +10,12 @@ import remarkMath from 'remark-math';
 import remarkGfm from 'remark-gfm';
 import rehypeKatex from 'rehype-katex';
 import rehypeStarryNight from 'rehype-starry-night'
-import { defineAsyncComponent, defineProps, watch } from 'vue';
+import { defineAsyncComponent, defineProps, defineEmits, watch } from 'vue';
 import * as runtime from 'vue/jsx-runtime';
 import '@/assets/css/tritanopia-dark.css';
 
-const props = defineProps(['content'])
-
+const props = defineProps(['content', 'scrolltoend'])
+const emit = defineEmits(['renderComplete'])
 var Content = renderBlog(); 
 function renderBlog() {
   return defineAsyncComponent({ 

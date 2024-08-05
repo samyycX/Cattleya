@@ -8,6 +8,7 @@ module.exports = {
     extend: {
       colors: {
         theme: {
+          0: "var(--theme-0)",
           1: "var(--theme-1)",
           2: "var(--theme-2)",
           3: "var(--theme-3)",

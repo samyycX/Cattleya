@@ -11,14 +11,14 @@ class Result:
     def err(code: int, msg: Optional[str] = None):
         return Response({
             'code': code,
-            'msg': [Emoticon.success(msg)]
+            'msg': msg
         })
 
     @staticmethod
     def success(msg: Optional[str] = None, data: Optional[Any] = None):
         return JsonResponse({
             'code': 200,
-            'msg': Emoticon.success(msg),
+            'msg': msg,
             'data': data
         })
 
@@ -26,6 +26,6 @@ class Result:
     def ok(*, code: Optional[int] = 200, msg: Optional[str] = None, data: Optional[Any] = None):
         return Response({
             'code': code,
-            'msg': [Emoticon.success(msg)],
+            'msg': msg,
             'data': data
         })

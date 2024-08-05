@@ -18,7 +18,7 @@ import NotificationOverlay from './components/NotificationOverlay.vue';
 <style>
 
 :root {
-  font-family: "LXGW WenKai Mono", sans-serif;
+  font-family: "Cascadia Mono Regular", "Source Han Sans", sans-serif;
 }
 
 #app {
@@ -27,5 +27,23 @@ import NotificationOverlay from './components/NotificationOverlay.vue';
   text-align: center;
   color: #2c3e50;
   margin-top: 0px;
+}
+
+::-webkit-scrollbar {
+ /*高宽分别对应横竖滚动条的尺寸*/
+  width: 10px;     
+  height: 1px;
+}
+
+/*滚动条里面小方块*/
+::-webkit-scrollbar-thumb {
+ -webkit-box-shadow: inset 0 0 5px rgba(0,0,0,0.2);
+  background: var(--theme-2);
+}
+
+/*滚动条里面轨道*/
+::-webkit-scrollbar-track {
+  -webkit-box-shadow: inset 0 0 5px rgba(0,0,0,0.2);
+  background: var(--theme-1);
 }
 </style>

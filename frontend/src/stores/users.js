@@ -30,8 +30,8 @@ export const useUserStore = defineStore('user', {
                 return Promise.resolve(this.users.get(id))
             }
             var promise = axios.get(`/api/users/${id}/`).then(resp => {
-                this.adduser(resp.data)
-                return resp.data
+                this.adduser(resp.data.data)
+                return resp.data.data
             })
             return promise
         }
