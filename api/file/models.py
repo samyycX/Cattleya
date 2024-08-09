@@ -49,10 +49,12 @@ class FileSerializer(serializers.ModelSerializer):
 
 class FileViewSet(viewsets.ModelViewSet):
     model = File
+    queryset = File.objects.all()
     parser_classes = (MultiPartParser,)
     authentication_classes = (TokenAuthentication,)
     permission_classes = (IsAuthenticated,)
     renderer_classes = (JSONResponseRenderer,)
+    serializer_class = FileSerializer
 
     permissions_classes_by_action = {
         "list": (IsAuthenticated,),

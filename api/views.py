@@ -1,5 +1,8 @@
+from django.http import HttpResponse
+from django.views.decorators.csrf import csrf_exempt
 from rest_framework.exceptions import ErrorDetail
 
+from cattleya import settings
 from .user.views import *
 from .activity.views import *
 

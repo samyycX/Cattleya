@@ -20,10 +20,11 @@ from rest_framework import routers
 from rest_framework.authtoken import views
 
 from .activity.comment.models import ActivityCommentViewSet
+from .activity.health.views import health_view
 from .activity.post.models import ActivityPostViewSet
 from .blog.models import BlogViewSet, BlogTagViewSet
 from .file.models import FileViewSet
-from .models import UserViewSet, UserLoginAPIView, UserAvatarUploadView, UserLogoutAPIView
+from .models import UserViewSet, UserLoginAPIView, UserAvatarUploadView, UserLogoutAPIView, UserIsAdminAPIView
 from .views import *
 
 router = routers.DefaultRouter()
@@ -46,6 +47,8 @@ urlpatterns = [
     path('auth/token', views.obtain_auth_token),
     path('auth/logout', csrf_exempt(UserLogoutAPIView.as_view())),
     path('auth/login', ensure_csrf_cookie(UserLoginAPIView.as_view())),
+    path('auth/isAdmin', UserIsAdminAPIView.as_view()),
     path('user-avatar', csrf_exempt(UserAvatarUploadView.as_view())),
+    path('health', csrf_exempt(health_view)),
     path('', include(router.urls))
 ]

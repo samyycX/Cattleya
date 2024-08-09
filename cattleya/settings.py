@@ -34,7 +34,7 @@ SECRET_KEY = env.str('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env.bool('DEBUG', False)
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 MEDIA_URL = '/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
@@ -44,6 +44,8 @@ OSS_ACCESS_KEY_SECRET = env("OSS_ACCESS_KEY_SECRET")
 OSS_ENDPOINT = env("OSS_ENDPOINT")
 OSS_BUCKET_NAME = env("OSS_BUCKET_NAME")
 OSS_EXPIRATION_TIME=env.int("OSS_EXPIRATION_TIME")
+
+HEALTH_SECRET = env("HEALTH_SECRET")
 
 DEFAULT_FILE_STORAGE = 'django_oss_storage.backends.OssMediaStorage'
 
@@ -88,8 +90,7 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
     ],
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 10,
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
     'EXCEPTION_HANDLER': 'api.views.my_exception_handler',
     'DEFAULT_RENDERER_CLASS': (
         'api.renderer.JSONResponseRenderer',

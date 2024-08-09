@@ -3,18 +3,17 @@
 @tailwind utilities;
 
 :root, #root, #docs-root {
-  --theme-0: #EDEAE1;
-  --theme-0: #faf7f0;
-  --theme-1: #E5E4CE;
-  --theme-2: #BED0A6;
-  --theme-3: #6C9585;
-  --theme-4: #416E66;
-  --theme-5: #233949;
-  --theme-6: #1E3140;
-  --theme-7: #192C33;
-  --theme-8: #14212A;
+  --theme-0: 250 247 240;
+  --theme-1: 229 228 206;
+  --theme-2: 190 208 166;
+  --theme-3: 108 149 133;
+  --theme-4: 65 110 102;
+  --theme-5: 35 57 73;
+  --theme-6: 30 49 64;
+  --theme-7: 25 44 51;
+  --theme-8: 20 33 42;
 
   --success: #16a34a;
-  --success: var(--theme-4);
+  --success: rgb(var(--theme-4));
   --error: #b91c1c;
 }

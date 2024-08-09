@@ -1,5 +1,5 @@
 <template>
-  <div class="h-full w-full flex flex-row bg-theme-0 text-left text-xl relative overflow-hidden">
+  <div class="h-full w-full flex flex-row bg-theme-0 text-left text-xl relative overflow-hidden text-theme-5">
     <FileInput hidden ref="fileInput" :allow-multiple="true" :notify="true" @success="onUploadSuccess" @fail="() => {}"/>
     <div class="flex-1 border-theme-5 p-2">
       <div class="flex flex-col gap-3 h-full">
@@ -28,20 +28,19 @@ import { onMounted } from 'vue';
 import { useNotification } from '@/stores/notifications';
 import axios from 'axios';
 import { useRoute } from 'vue-router';
-import { useUserStore } from '@/stores/users';
 
 const notification = useNotification();
 const route = useRoute();
-const userStore = useUserStore();
-const user = ref({});
 
-const blog = reactive({
-  title: "",
-  content: "",
-  visible: false
-})
+const blog = ref({
+      id: undefined,
+      title: "",
+      content: "",
+      visible: false,
+    })
 
-const renderContent = computed(() => `# ${blog.title}\n${blog.content}`)
+
+const renderContent = computed(() => `# ${blog.value.title}\n${blog.value.content}`)
 
 const lastScrollTo = ref(0);
 const lastScrollToEnd = ref(false);
@@ -54,8 +53,6 @@ const contentInput = ref()
 const tagSelection = ref()
 
 const isManuallyScrolled = ref(false)
-
-const currentBlogId = ref(null)
 
 watch(blog, () => {
   var elem = document.getElementById("preview");
@@ -72,19 +69,10 @@ onMounted(async () => {
   "mousedown wheel DOMMouseScroll mousewheel keyup touchmove".split(" ").map(e => elem.addEventListener(e, () => {
     isManuallyScrolled.value = true;
   }));
-  user.value = await userStore.getCurrentUser();
-  axios.get(`/api/blogs/${route.params.blogId}/`).then((resp) => {
-    const result = resp.data;
-    if (result.code == 200) {
-      if (result.data.author != user.value.id) {
-        notification.error("你无权修改这篇博客")
-      } else {
-        Object.assign(blog, result.data)
-      }
-    } else {
-      notification.error(result.msg)
-    }
-  })
+  if (route.meta.blog != undefined) {
+    blog.value = Object.assign({}, route.meta.blog);
+    Object.assign(tagSelection.value.selectedTags, blog.value.tags);
+  }
 });
 
 
@@ -103,30 +91,32 @@ const onPreviewScrollEnd = (e) => {
 }
 
 const onUploadSuccess = (data) => {
+  let addedContent = ""
+  const index = document.activeElement.id == "content-input" ? contentInput.value.selectionStart : blog.value.content.length;
   for (var file of data) {
-    const index = document.activeElement.id == "content-input" ? contentInput.value.selectionStart : blog.content.length;
     if (imageExts.map(ext => file.path.endsWith(ext)).includes(true)) {
-      blog.content = "\n" + blog.content.slice(0, index) + `![](${file.path})` + blog.content.slice(index) + "\n"
+      addedContent += `\n![](${file.path})\n`
     } else {
-      blog.content = "\n" + blog.content.slice(0, index) + `[${file.path}](${file.path})` + blog.content.slice(index) + "\n"
+      addedContent += `\n[${file.name}](${file.path})\n`
     }
   } 
+  blog.value.content = blog.value.content.slice(0, index) + `\n${addedContent}\n` + blog.value.content.slice(index)
 }
 
 const save = async () => {
   var resp;
-  if (currentBlogId.value == null) {
-    if (blog.title == "") {
+  if (blog.value.id == undefined) {
+    if (blog.value.title == "") {
       notification.error("请先输入标题")
       return false;
     }
-    resp = await axios.post("/api/blogs/", {
-      ...blog,
+    resp = await axios.post("/api/blogs/?visible=all", {
+      ...blog.value,
       tags: tagSelection.value.selectedTags.map(tag => tag.id)
     })
   } else {
-    resp = await axios.patch(`/api/blogs/${currentBlogId.value}/`, {
-      ...blog,
+    resp = await axios.patch(`/api/blogs/${blog.value.id}/?visible=all`, {
+      ...blog.value,
       tags: tagSelection.value.selectedTags.map(tag => tag.id)
   })
 
@@ -134,8 +124,8 @@ const save = async () => {
   const result = resp.data;
   if (result.code == 200) {
     notification.success("保存成功")
-    if (currentBlogId.value == null) {
-      currentBlogId.value = result.data.id;
+    if (blog.value.id == undefined) {
+      blog.value.id = result.data.id;
     }
     return true;
   } else {
@@ -148,14 +138,13 @@ const switchPublish = async () => {
   if (!await save()) {
     return
   }
-  console.log(!blog.visible);
-  axios.patch(`/api/blogs/${currentBlogId.value}/`, {
-    visible: !blog.visible
+  axios.patch(`/api/blogs/${blog.value.id}/?visible=all`, {
+    visible: !blog.value.visible
   }).then((resp) => {
     const result = resp.data;
     if (result.code == 200) {
-      notification.success(!blog.visible ? "发布成功!" : "取消发布成功！")
-      blog.visible = !blog.visible
+      notification.success(!blog.value.visible ? "发布成功!" : "取消发布成功！")
+      blog.value.visible = !blog.value.visible
     } else {
       notification.error(result.msg)
     }

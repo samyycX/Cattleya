@@ -1,5 +1,5 @@
 <template>
-  <div id="content-container">
+  <div id="mdx-content-container">
     <Content />
   </div>
 </template>
@@ -14,7 +14,7 @@ import { defineAsyncComponent, defineProps, defineEmits, watch } from 'vue';
 import * as runtime from 'vue/jsx-runtime';
 import '@/assets/css/tritanopia-dark.css';
 
-const props = defineProps(['content', 'scrolltoend'])
+const props = defineProps(['content'])
 const emit = defineEmits(['renderComplete'])
 var Content = renderBlog(); 
 function renderBlog() {
@@ -28,6 +28,7 @@ function renderBlog() {
               rehypePlugins: [ rehypeKatex, rehypeStarryNight ]
             }).then((content) => {
               resolve(content.default);
+              emit("renderComplete")
             }).catch(() => {
               reject();
             });

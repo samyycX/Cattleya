@@ -10,7 +10,7 @@ from rest_framework.permissions import IsAuthenticated, BasePermission, IsAdminU
 from rest_framework.request import Request
 from rest_framework.validators import UniqueValidator
 
-from api.models import User
+from api.models import User, UserBriefSerializer
 from api.renderer import JSONResponseRenderer
 from api.utils.result import Result
 
@@ -30,6 +30,10 @@ class BlogTag(models.Model):
     id = models.AutoField(primary_key=True, blank=False, null=False, unique=True)
     name = models.CharField(verbose_name="标签名称", max_length=64, unique=True)
     created_time = models.DateTimeField(verbose_name="创建时间", auto_now=True)
+
+    @property
+    def count(self):
+        return Blog.objects.filter(tags__id__contains=self.id).count()
 
 
 class BlogTagCreateSerializer(serializers.ModelSerializer):
@@ -53,7 +57,7 @@ class BlogTagCreateSerializer(serializers.ModelSerializer):
 class BlogTagSerializer(serializers.ModelSerializer):
     class Meta:
         model = BlogTag
-        fields = ("id", "name", "created_time")
+        fields = ("id", "name", "count", "created_time")
 
 
 class BlogTagViewSet(viewsets.ModelViewSet):
@@ -99,6 +103,9 @@ class Blog(models.Model):
 
     # comments = models.ForeignKey(BlogComment, verbose_name="评论")
 
+    @property
+    def length(self):
+        return len(self.content)
     class Meta:
         permissions = [
             ("blog", "Can control blog.")
@@ -144,12 +151,13 @@ class BlogCreateSerializer(serializers.ModelSerializer):
 
 
 class BlogSerializer(serializers.ModelSerializer):
+    author = UserBriefSerializer(read_only=True)
     tags = BlogTagSerializer(many=True)
 
     class Meta:
         model = Blog
-        fields = ('id', 'author', 'title', 'content', 'visible', 'created_time', 'updated_time', 'tags')
-        read_only_fields = ('id', 'author', 'created_time', 'updated_time')
+        fields = ('id', 'author', 'title', 'content', 'visible', 'created_time', 'updated_time', 'tags', 'length')
+        read_only_fields = ('id', 'author', 'created_time', 'updated_time', 'length')
 
     def update(self, instance, validated_data):
         instance.title = validated_data.get('title', instance.title)
@@ -161,12 +169,20 @@ class BlogSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
 
+class BlogBriefSerializer(serializers.ModelSerializer):
+    author = serializers.SlugRelatedField(slug_field="nickname", read_only=True)
+    tags = BlogTagSerializer(many=True, read_only=True)
+    class Meta:
+        model = Blog
+        fields = ("id", "author", "title", "length", "created_time", "updated_time", "tags", "visible")
+
 
 class BlogViewSet(viewsets.ModelViewSet):
     model = Blog,
     queryset = Blog.objects.all()
     authentication_classes = (TokenAuthentication,)
     renderer_classes = (JSONResponseRenderer,)
+    pagination_class = None
     permissions_classes_by_action = {
         "list": (AllowAny,),
         "retrieve": (AllowAny,),
@@ -174,6 +190,8 @@ class BlogViewSet(viewsets.ModelViewSet):
         "partial_update": (IsBlogOwner,),
         "destroy": (IsBlogOwner,),
         "create": (CanWriteBlog,),
+        "list_brief_by_latest": (AllowAny,),
+        "brief": (AllowAny,),
     }
     serializers_class_by_action = {
         "create": BlogCreateSerializer,
@@ -196,15 +214,28 @@ class BlogViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         query_params = self.request.query_params
         tag = query_params.get("tag", None)
+        visible = query_params.get("visible", "true")
+
+        result = Blog.objects.all()
 
         if tag is not None:
             try:
                 tag = BlogTag.objects.get(id=tag)
-                return Blog.objects.filter(tag=tag)
+                result = result.filter(tags__id__contains=tag.id)
             except BlogTag.DoesNotExist:
                 raise serializers.ValidationError("标签不存在")
 
-        return Blog.objects.all()
+        if visible == "false":
+            if not IsAdminUser().has_permission(self.request, None):
+                raise serializers.ValidationError("无权限")
+            result = result.filter(visible=False)
+        elif visible == "all":
+            if not IsAdminUser().has_permission(self.request, None):
+                raise serializers.ValidationError("无权限")
+        else:
+            result = result.filter(visible=True)
+
+        return result
 
     def create(self, request, *args, **kwargs):
         serializer = BlogCreateSerializer(data=request.data)
@@ -217,3 +248,17 @@ class BlogViewSet(viewsets.ModelViewSet):
         )
         blog.tags.set(serializer.validated_data['tags'])
         return Result.ok(code=200, data=BlogSerializer(blog).data)
+
+    @action(detail=False, methods=["get"])
+    def listBriefByLatest(self, request: Request, pk=None):
+        blogs = []
+        for blog in self.get_queryset().order_by('-created_time'):
+            blogs.append(BlogBriefSerializer(blog).data)
+        return Result.ok(code=200, data=blogs)
+
+    @action(detail=True, methods=["get"])
+    def brief(self, request: Request, pk=None):
+        blog = self.get_object()
+        blog_brief_data = BlogBriefSerializer(blog).data
+        return Result.ok(code=200, data=blog_brief_data)
+

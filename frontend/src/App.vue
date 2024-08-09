@@ -1,18 +1,34 @@
 <template>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.css" integrity="sha384-NFTC4wvyQKLwuJ8Ez9AvPNBv8zcC2XaQzXSMvtORKw28BdJbB2QE8Ka+OyrIHcQJ" crossorigin="anonymous">
-  <div class="flex h-screen text-center bg-theme-1">
-    <!--<MenuBar class="flex flex-column"></MenuBar>!-->
-    <!-- <img alt="Vue logo" src="./assets/logo.png">
-    <MainPage></MainPage> -->
-    <NotificationOverlay />
-    <router-view class="body flex flex-column"></router-view>
+  <div id="body" class="flex flex-col sm:flex-row w-screen h-screen text-center bg-theme-0 overflow-y-scroll md:overflow-y-hidden">
+
+    <NotificationOverlay class="z-[1000] " />
+    <PopupOverlay class="z-[1001] " />
+    <ProgressBarOverlay class="z-[999] " />
+    <SideBar class="w-3/12 overflow-y-scroll lg:min-w-2/12 lg:overflow-hidden" v-if="(!isMobile) && menu"/>
+    <MobileTopBar v-if="isMobile && menu" class="" />
+
+    <div class="px-4 md:w-full md:px-0 pb-32 md:pb-0">
+      <router-view></router-view>
+    </div>
   </div>
 </template>
 
 <script setup>
 import '@/assets/text/text.css'
-import 'lxgw-wenkai-webfont/style.css'
 import NotificationOverlay from './components/NotificationOverlay.vue';
+import SideBar from './layouts/SideBar.vue';
+import MobileTopBar from './layouts/MobileTopBar.vue';
+import { ref, watchEffect } from 'vue';
+import { isMobile } from './utils';
+import { useController } from './stores/controller';
+import { storeToRefs } from 'pinia';
+import PopupOverlay from './components/PopupOverlay.vue';
+import ProgressBarOverlay from './components/ProgressBarOverlay.vue';
+
+const controller = useController();
+const { menu } = storeToRefs(controller);
+
 </script>
 
 <style>
@@ -21,11 +37,16 @@ import NotificationOverlay from './components/NotificationOverlay.vue';
   font-family: "Cascadia Mono Regular", "Source Han Sans", sans-serif;
 }
 
+body {
+  overflow: hidden;
+  width: 100%;
+}
+
 #app {
   -webkit-font-smoothing: antialiased;
+  font-synthesis: none !important;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
-  color: #2c3e50;
   margin-top: 0px;
 }
 

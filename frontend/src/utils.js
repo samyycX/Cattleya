@@ -1,5 +1,6 @@
 import axios from "axios"
 import { useToast } from "primevue/usetoast"
+import { ref } from "vue"
 
 export function formatDate(date) {
     var year = date.getFullYear()
@@ -12,14 +13,10 @@ export function formatDate(date) {
     return `${year}年${month}月${day}日 ${hour}时${minute}分${second}.${millisecond}秒`
 }
 
-export function toastError(toast, msg) {
-    msg.forEach(m => toast.add({ severity: 'error', summary: m, life: 3000 }))
+const mediaQuery = window.matchMedia('(min-width: 768px)')
+export const isMobile = ref(!mediaQuery.matches);
+const isMobileListener = (mediaQuery) => {
+    isMobile.value = !mediaQuery.matches; 
 }
 
-export function toastSuccess(toast, msg) {
-    toast.add({ severity: 'success', summary: msg[0], life: 3000 })
-}
-
-// export async function getCurrentUser() {
-//     return new Promise((await axios.get(`/api/user/${localStorage.USER_ID}/`)).data)
-// }
+mediaQuery.addEventListener("change", isMobileListener);

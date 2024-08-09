@@ -167,6 +167,10 @@ class UserLoginSerializer(serializers.ModelSerializer):
         model = User
         fields = ("username", "password")
 
+class UserBriefSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ("id", "nickname")
 
 class UserAvatarUploadView(APIView):
     parser_classes = (MultiPartParser,)
@@ -269,3 +273,10 @@ class UserLogoutAPIView(APIView):
     def get(self, request: Request):
         Token.objects.filter(user=request.user).delete()
         return Result.ok(msg="拜拜")
+
+class UserIsAdminAPIView(APIView):
+    permission_classes = (IsAuthenticated,)
+    authentication_classes = (TokenAuthentication,)
+
+    def get(self, request: Request):
+        return Result.ok(data=request.user.is_staff)
