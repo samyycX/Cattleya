@@ -89,7 +89,6 @@ class BlogTagViewSet(viewsets.ModelViewSet):
             return self.serializers_class_by_action[self.action]
         return self.serializers_class_by_action["*"]
 
-
 class Blog(models.Model):
     id = models.AutoField(primary_key=True, blank=False, null=False, unique=True)
     author = models.ForeignKey(User, verbose_name="作者", on_delete=models.DO_NOTHING)
@@ -97,7 +96,7 @@ class Blog(models.Model):
     content = models.TextField(verbose_name="内容", max_length=16777215)
     visible = models.BooleanField(verbose_name="可见性")
     created_time = models.DateTimeField(verbose_name="发布时间", auto_now_add=True)
-    updated_time = models.DateTimeField(verbose_name="最后一次更新时间", auto_now=True)
+    updated_time = models.DateTimeField(verbose_name="最后一次更新时间", auto_now_add=True)
     # TODO: 添加以下数据链接
     tags = models.ManyToManyField(BlogTag, verbose_name="标签")
 
@@ -106,6 +105,7 @@ class Blog(models.Model):
     @property
     def length(self):
         return len(self.content)
+
     class Meta:
         permissions = [
             ("blog", "Can control blog.")
@@ -169,9 +169,11 @@ class BlogSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
 
+
 class BlogBriefSerializer(serializers.ModelSerializer):
-    author = serializers.SlugRelatedField(slug_field="nickname", read_only=True)
+    author = UserBriefSerializer(read_only=True)
     tags = BlogTagSerializer(many=True, read_only=True)
+
     class Meta:
         model = Blog
         fields = ("id", "author", "title", "length", "created_time", "updated_time", "tags", "visible")
@@ -182,7 +184,6 @@ class BlogViewSet(viewsets.ModelViewSet):
     queryset = Blog.objects.all()
     authentication_classes = (TokenAuthentication,)
     renderer_classes = (JSONResponseRenderer,)
-    pagination_class = None
     permissions_classes_by_action = {
         "list": (AllowAny,),
         "retrieve": (AllowAny,),
@@ -216,7 +217,7 @@ class BlogViewSet(viewsets.ModelViewSet):
         tag = query_params.get("tag", None)
         visible = query_params.get("visible", "true")
 
-        result = Blog.objects.all()
+        result = Blog.objects.all().order_by('-created_time')
 
         if tag is not None:
             try:
@@ -251,10 +252,12 @@ class BlogViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=["get"])
     def listBriefByLatest(self, request: Request, pk=None):
-        blogs = []
-        for blog in self.get_queryset().order_by('-created_time'):
-            blogs.append(BlogBriefSerializer(blog).data)
-        return Result.ok(code=200, data=blogs)
+        queryset = self.get_queryset().order_by('-created_time')
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            return self.get_paginated_response(BlogBriefSerializer(page, many=True).data)
+
+        return Result.ok(code=200, data={"next": None, "results": BlogBriefSerializer(queryset, many=True).data})
 
     @action(detail=True, methods=["get"])
     def brief(self, request: Request, pk=None):
@@ -262,3 +265,10 @@ class BlogViewSet(viewsets.ModelViewSet):
         blog_brief_data = BlogBriefSerializer(blog).data
         return Result.ok(code=200, data=blog_brief_data)
 
+    def partial_update(self, request: Request, *args, **kwargs):
+        result = super().partial_update(request, *args, **kwargs)
+        if "title" in request.data or "content" in request.data:
+            blog = self.get_object()
+            blog.updated_time = datetime.utcnow()
+            blog.save()
+        return result

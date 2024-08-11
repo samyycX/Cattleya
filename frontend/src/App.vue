@@ -8,8 +8,8 @@
     <SideBar class="w-3/12 overflow-y-scroll lg:min-w-2/12 lg:overflow-hidden" v-if="(!isMobile) && menu"/>
     <MobileTopBar v-if="isMobile && menu" class="" />
 
-    <div class="px-4 md:w-full md:px-0 pb-32 md:pb-0">
-      <router-view></router-view>
+    <div class="px-4 h-full md:w-full md:px-0">
+      <router-view :key="$route.fullPath"></router-view>
     </div>
   </div>
 </template>
@@ -19,7 +19,6 @@ import '@/assets/text/text.css'
 import NotificationOverlay from './components/NotificationOverlay.vue';
 import SideBar from './layouts/SideBar.vue';
 import MobileTopBar from './layouts/MobileTopBar.vue';
-import { ref, watchEffect } from 'vue';
 import { isMobile } from './utils';
 import { useController } from './stores/controller';
 import { storeToRefs } from 'pinia';

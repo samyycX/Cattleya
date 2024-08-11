@@ -13,7 +13,7 @@ from rest_framework.request import Request
 from rest_framework.views import APIView
 
 from api.file.utils import get_file_hash
-from api.models import User
+from api.models import User, UserBriefSerializer
 from api.renderer import JSONResponseRenderer
 from api.utils.result import Result
 from cattleya import settings
@@ -42,6 +42,7 @@ class IsOwner(BasePermission):
 
 class FileSerializer(serializers.ModelSerializer):
     path = FilePathField(many=False, read_only=True)
+    created_by = UserBriefSerializer(many=False, read_only=True)
     class Meta:
         model = File
         fields = ("id", "name", "path", "hash", "created_by", "created_time")

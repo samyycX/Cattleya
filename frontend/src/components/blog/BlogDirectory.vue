@@ -17,6 +17,8 @@ const entries = ref([])
 const entry = computed(() => {return { title:"", children: entries.value }})
 const activated = ref({})
 
+let jumping = false
+
 const getTail = (node) => {
   if (node.children.length != 0) {
     return getTail(node.children.at(-1));
@@ -102,12 +104,17 @@ const deactivateAll = (nodes, id) => {
 }
 
 const scrollTo = (entry) => {
+  jumping = true
   activated.value = entry;
   entry.activate = true;
   deactivateAll(entries.value, entry.id);
 }
 
 const onScroll = (scrollTop) => {
+  if (jumping) {
+    jumping = false;
+    return;
+  }
   if (scrollTop == 0) {
     activated.value.activate = false;
     activated.value = entries.value[0];

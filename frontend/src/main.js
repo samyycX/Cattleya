@@ -27,7 +27,9 @@ const controller = useController()
 
 const routes = [
   {
-    name: 'mainpage', path: '/', component: () => import("./pages/MainPage.vue")
+    name: 'mainpage', path: '/', component: () => import("./pages/MainPage.vue"), beforeEnter: (to, from, next) => {
+      next('/blog/list')
+    }
   },
   {
     name: 'usercenter', path: '/user/center', component: () => import("./pages/user/UserCenter2.vue")
@@ -45,42 +47,10 @@ const routes = [
     beforeEnter: (to, from, next) => {
       axios.get(`/api/auth/isAdmin`).then((resp) => {
         if (resp.data.data) {
-          next('admin/blog');
-        } else {
-          notification.error("你无权进入此页面")
-          next('mainpage')
-        }
-      })
-    }
-  },
-  {
-    name: 'admin-blog',
-    path: "/admin/blog",
-    component: () => import("./pages/admin/AdminPage.vue"),
-    beforeEnter:(to, from, next) => {
-      axios.get(`/api/auth/isAdmin`).then((resp) => {
-        if (resp.data.data) {
-          to.meta.mode = "blog"
           next();
         } else {
           notification.error("你无权进入此页面")
-          next('mainpage')
-        }
-      })
-    }
-  },
-  {
-    name: 'admin-file',
-    path: "/admin/file",
-    component: () => import("./pages/admin/AdminPage.vue"),
-    beforeEnter:(to, from, next) => {
-      axios.get(`/api/auth/isAdmin`).then((resp) => {
-        if (resp.data.data) {
-          to.meta.mode = "file"
-          next();
-        } else {
-          notification.error("你无权进入此页面")
-          next('mainpage')
+          return false;
         }
       })
     }
@@ -96,62 +66,28 @@ const routes = [
           const user = await users.getCurrentUser();
           if (result.data.author.id != user.id) {
             notification.error("你无权修改这篇博客")
-            next('mainpage')
+            return false;
           } else {
             to.meta.blog = result.data;
             next();
           }
         } else {
           notification.error(result.msg)
-          next('mainpage');
+          return false;
         }
       });
 
     }
   },
   {
+    name: 'blog-new',
+    path: '/blog/new/',
+    component: () => import('./pages/blog/BlogEditPage.vue'),
+  },
+  {
     name: 'blog-list',
     path: '/blog/list',
-    component: () => import('./pages/blog/BlogListPage.vue'),
-    beforeEnter: (to, from, next) => {
-      const tag = to.query.tag
-      const params = tag == undefined ? {} : { params: { tag } }
-      const callNext = () => {
-        if (to.meta.tags != null && to.meta.blogs != null && (tag == undefined || to.meta.queriedTag != undefined)) next();
-      }
-      if (tag != undefined) {
-        axios.get(`/api/blog-tags/${tag}/`).then((resp) => {
-          const result = resp.data;
-          if (result.code != 200) {
-            notification.error(result.msg);
-            next('bloglist')
-          } else {
-            to.meta.queriedTag = result.data;
-            callNext()
-          }
-        });
-      }
-      axios.get("/api/blogs/listBriefByLatest/", params).then((resp) => {
-        const result = resp.data;
-        if (result.code != 200) {
-          notification.error(result.msg);
-          next('error')
-        } else {
-          to.meta.blogs = result.data;
-          callNext()
-        }
-      });
-      axios.get("/api/blog-tags/").then((resp) => {
-        const result = resp.data;
-        if (result.code != 200) {
-          notification.error(result.msg);
-          next('error')
-        } else {
-          to.meta.tags = result.data;
-          callNext();
-        }
-      });
-    }
+    component: () => import('./pages/blog/BlogListPage.vue')
   },
   {
     name: 'blog',
@@ -165,7 +101,7 @@ const routes = [
           next();
         } else {
           notification.error(result.msg)
-          next('mainpage');
+          return false;
         }
       });
     }
@@ -178,7 +114,7 @@ const router = createRouter({
 })
 
 router.beforeEach((to, from, next) => {
-  if (["blog-edit", "admin", "admin-blog", "admin-file"].includes(to.name)) {
+  if (["blog-edit", "blog-new", "admin"].includes(to.name)) {
     controller.hideMenu();
   } else {
     controller.showMenu();

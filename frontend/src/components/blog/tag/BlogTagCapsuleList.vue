@@ -4,7 +4,7 @@
       <TagIcon class="size-7 text-theme-5 my-auto" />
       <p class="text-2xl text-theme-5 text-left">标签</p>
     </div>
-    <div class="flex flex-row flex-wrap gap-2">
+    <div class="flex flex-row flex-wrap gap-2" v-if="props.tags">
       <div v-for="tag in props.tags.toSorted((a, b) => b.count - a.count)" :key="tag.id">
         <div class="flex flex-row gap-2 text-theme-0 bg-theme-5 p-1 cursor-pointer text-sm leading-none rounded-md" @click="() => toBlogTag(tag)">
           <p>{{ tag.name }}</p>
@@ -19,7 +19,6 @@
 import { TagIcon } from '@heroicons/vue/24/outline'
 import { defineProps } from 'vue';
 const props = defineProps(["tags"])
-
 const toBlogTag = (tag) => {
   window.location.href = `/blog/list?tag=${tag.id}`
 }

@@ -1,40 +1,40 @@
 <template>
-  <div class="m-auto">
-    <div class="flex flex-row w-[64rem] h-[32rem] border-solid border-4 border-theme-4">
-      <div class="flex flex-col justify-center bg-theme-4 w-1/3">
+  <div class="m-auto w-full h-full flex flex-col justify-center">
+    <div class="flex flex-col md:flex-row h-fit w-11/12 md:w-5/6 lg:w-2/3 md:h-5/6 lg:h-1/2 m-auto border-solid border-4 border-theme-5 gap-4">
+      <div class="flex flex-col justify-center bg-theme-5 w-full md:w-1/3">
         <transition name="avatar" mode="out-in">
-          <div class="flex flex-col gap-4 w-full h-full justify-center" v-if="!isChangingPassword">
-            <div id="avatar-container" class="mx-auto w-[160px] h-[160px] relative" @click="callAvatarUploadDom">
-              <img :src="user.avatar" width="160px" height="160px" class="rounded-xl mx-auto"/>
-              <div id="avatar-overlay" class="flex flex-col justify-center opacity-0 absolute w-[160px] h-[160px] left-0 top-0 backdrop-blur-sm rounded-xl" @click="callRealAvatarInputDom">
+          <div class="flex flex-col gap-2 w-full h-full justify-center py-10 md:py-0" v-if="!isChangingPassword">
+            <div id="avatar-container" class="mx-auto w-1/2 md:h-1/2 relative" @click="callAvatarUploadDom">
+              <img :src="user.avatar" class="rounded-xl mx-auto aspect-square"/>
+              <div id="avatar-overlay" class="flex flex-col justify-center opacity-0 absolute w-full aspect-square cursor-pointer left-0 top-0 backdrop-blur-sm rounded-xl" @click="callRealAvatarInputDom">
                   <ArrowUpTrayIcon class="text-theme-1 size-20 m-auto" />
               </div>
               <input type="file" id="avatar-upload-dom" @change="uploadAvatar" hidden />
             </div>
-            <span class="text-theme-1 text-4xl">{{ user.username }}</span>
+            <span class="text-theme-0 text-xl leading-none">{{ user.username }}</span>
           </div>
-          <div class="flex flex-col gap-4 w-full h-full justify-center" v-else-if="isChangingPassword">
+          <div class="flex flex-col gap-4 w-full h-full justify-center" v-else>
             <div class="flex flex-col gap-3 w-3/4 mx-auto">
-              <div class="flex flex-col text-xl"> 
+              <div class="flex flex-col"> 
                 <input type="password"
-                  class="outline-none border-solid border-2 border-theme-5 bg-theme-1 placeholder:text-theme-4 w-full px-1 text-theme-5"
+                  class="outline-none border-solid border-2 border-theme-5 bg-theme-0 placeholder:text-theme-5 w-full px-1 text-theme-5"
                   placeholder="旧密码"
                   v-model="passwords.oldPassword"
                 />
                 <p class="text-xs text-red-700 text-left" v-if="warnings.oldPassword != ''">{{ warnings.oldPassword }}</p> 
               </div>
-              <div class="flex flex-col text-xl"> 
+              <div class="flex flex-col"> 
                 <input type="password"
-                  class="outline-none border-solid border-2 border-theme-5 bg-theme-1 placeholder:text-theme-4 w-full px-1 text-theme-5"
+                  class="outline-none border-solid border-2 border-theme-5 bg-theme-0 placeholder:text-theme-5 w-full px-1 text-theme-5"
                   placeholder="新密码"
                   v-model="passwords.newPassword"
                   @focusout="checkPassword"
                 />
                 <p class="text-xs text-red-700 text-left" v-if="warnings.nickname != ''">{{ warnings.nickname }}</p> 
               </div>
-              <div class="flex flex-col text-xl"> 
+              <div class="flex flex-col"> 
                 <input type="password"
-                  class="outline-none border-solid border-2 border-theme-5 bg-theme-1 placeholder:text-theme-4 w-full px-1 text-theme-5"
+                  class="outline-none border-solid border-2 border-theme-5 bg-theme-0 placeholder:text-theme-5 w-full px-1 text-theme-5"
                   placeholder="重复输入新密码"
                   v-model="passwords.newRepeatPassword"
                   @focusout="checkRepeatPassword"
@@ -46,47 +46,54 @@
           </div>
         </transition>
       </div>
-      <div class="flex flex-col gap-2 my-3 mx-auto my-auto">
-        <div class="flex flex-row h-fit shrink">
-          <UserIcon class="size-9 inline text-theme-4"></UserIcon>
-          <div class="flex flex-col w-full ml-1 text-xl justify-center"> 
-            <input type="text"
-              class="outline-none border-solid border-2 border-theme-4 bg-theme-1 placeholder:text-theme-4 w-full px-1 text-theme-5"
-              placeholder="昵称"
-              v-model="user.nickname" />
-            <p class="text-xs text-red-700 text-left" v-if="warnings.nickname != ''">{{ warnings.nickname }}</p> 
+      <div class="flex flex-col w-full h-full">
+        <div class="flex flex-col gap-2 my-3 mx-auto my-auto">
+          <div class="flex flex-row h-fit shrink">
+            <UserIcon class="size-8 inline text-theme-5"></UserIcon>
+            <div class="flex flex-col w-full ml-1 justify-center"> 
+              <input type="text"
+                class="outline-none border-solid border-2 border-theme-5 bg-theme-0 placeholder:text-theme-5 w-full px-1 text-theme-5"
+                placeholder="昵称"
+                v-model="user.nickname" />
+              <p class="text-xs text-red-700 text-left" v-if="warnings.nickname != ''">{{ warnings.nickname }}</p> 
+            </div>
           </div>
-        </div>
-        <div class="flex flex-row h-full shrink">
-          <KeyIcon class="size-9 inline text-theme-4 my-auto"></KeyIcon>
-          <button class="bg-theme-4 text-theme-1 ml-1 w-full text-xl" @click="isChangingPassword = !isChangingPassword">{{ isChangingPassword ? "恢复" : "点我修改密码"}}</button> 
-        </div>
-        <div class="flex flex-row h-fit shrink">
-          <EnvelopeIcon class="size-9 inline text-theme-4"></EnvelopeIcon>
-          <div class="flex flex-col w-full ml-1 text-xl justify-center"> 
-            <input type="text"
-              class="outline-none border-solid border-2 border-theme-4 bg-theme-1 placeholder:text-theme-4 w-full px-1 text-theme-5"
-              placeholder="邮箱"
-              v-model="user.email"
-              @focusout="checkEmail"
-            />
-            <p class="text-xs text-red-700 text-left" v-if="warnings.email != ''">{{ warnings.email }}</p> 
+          <div class="flex flex-row h-full shrink">
+            <KeyIcon class="size-8 inline text-theme-5 my-auto"></KeyIcon>
+            <button class="bg-theme-5 text-theme-1 ml-1 w-full" @click="isChangingPassword = !isChangingPassword">{{ isChangingPassword ? "恢复" : "点我修改密码"}}</button> 
           </div>
-        </div>
-        <div class="flex flex-row h-fit shrink">
-          <PhoneIcon class="size-9 inline text-theme-4"></PhoneIcon>
-          <div class="flex flex-col w-full ml-1 text-xl justify-center"> 
-            <input type="text"
-              class="outline-none border-solid border-2 border-theme-4 bg-theme-1 placeholder:text-theme-4 w-full px-1 text-theme-5"
-              placeholder="手机号"
-              v-model="user.phone" 
-              @focusout="checkPhone"
-            />
-            <p class="text-xs text-red-700 text-left" v-if="warnings.phone != ''">{{ warnings.phone }}</p> 
+          <div class="flex flex-row h-fit shrink">
+            <EnvelopeIcon class="size-8 inline text-theme-5"></EnvelopeIcon>
+            <div class="flex flex-col w-full ml-1 justify-center"> 
+              <input type="text"
+                class="outline-none border-solid border-2 border-theme-5 bg-theme-0 placeholder:text-theme-5 w-full px-1 text-theme-5"
+                placeholder="邮箱"
+                v-model="user.email"
+                @focusout="checkEmail"
+              />
+              <p class="text-xs text-red-700 text-left" v-if="warnings.email != ''">{{ warnings.email }}</p> 
+            </div>
           </div>
+          <div class="flex flex-row h-fit shrink">
+            <PhoneIcon class="size-8 inline text-theme-5"></PhoneIcon>
+            <div class="flex flex-col w-full ml-1 justify-center"> 
+              <input type="text"
+                class="outline-none border-solid border-2 border-theme-5 bg-theme-0 placeholder:text-theme-5 w-full px-1 text-theme-5"
+                placeholder="手机号"
+                v-model="user.phone" 
+                @focusout="checkPhone"
+              />
+              <p class="text-xs text-red-700 text-left" v-if="warnings.phone != ''">{{ warnings.phone }}</p> 
+            </div>
+          </div>
+          <button class="w-full bg-theme-0 text-theme-5 border-2 border-theme-5 mt-6" @click="resetInfo">放弃</button>
+          <button class="w-full bg-theme-5 text-theme-1 " @click="submit">确认</button>
         </div>
-        <button class="w-full bg-theme-1 text-theme-4 text-xl border-2 border-theme-4 mt-6" @click="resetInfo">放弃</button>
-        <button class="w-full bg-theme-4 text-theme-1 text-xl" @click="submit">确认</button>
+        
+        <div class="flex flex-row justify-end gap-2 pr-1">
+          <p class="text-theme-5/70 text-sm hover:underline underline-offset-4 cursor-pointer" v-if="user.is_staff" @click="toAdmin">进入管理页面</p>
+          <p class="text-theme-5/70 text-sm hover:underline underline-offset-4 cursor-pointer" @click="userLogout">登出</p>
+        </div>
       </div>
     </div>
   </div>
@@ -99,10 +106,12 @@ import axios from 'axios';
 import { UserIcon, KeyIcon, ArrowUpTrayIcon, EnvelopeIcon, PhoneIcon } from '@heroicons/vue/24/solid';
 import * as utils from '@/utils/user';
 import { useNotification } from '@/stores/notifications';
+import { useRouter } from 'vue-router';
 
 const userStore = useUserStore();
 const notification = useNotification();
 const user = ref({})
+const router = useRouter();
 var initialUser = {}
 
 const refreshUser = () => {
@@ -215,6 +224,23 @@ const submit = () => {
       notification.success("修改成功！")
     }
   })
+}
+
+const userLogout = () => {
+    axios.get("/api/auth/logout").then((resp) => {
+        const result = resp.data;
+        if (result.code == 200) {
+            localStorage.removeItem("TOKEN")
+            userStore.clearCurrentUser()
+            notification.success("登出成功")
+            router.push({ name: 'mainpage' })
+        }
+    }),
+    userStore.clearCurrentUser()
+}
+
+const toAdmin = () => {
+  router.push({ name: 'admin' })
 }
 
 </script>

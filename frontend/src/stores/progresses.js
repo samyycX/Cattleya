@@ -9,7 +9,7 @@ export const useProgress = defineStore('progress', {
         }
     },
     actions: {
-        addProgresses(onAllDone, ...tasks) {
+        addTasks(onAllDone, ...tasks) {
             if (this.tasks.length != 0) {
                 return
             }
@@ -22,8 +22,10 @@ export const useProgress = defineStore('progress', {
             this.tasks.push(...tasks)
         },
         updateProgress(index, progress) {
-            console.log(index, progress);
             this.tasks[index].progress = progress;
+        },
+        updateMsg(index, msg) {
+            this.tasks[index].msg = msg;
         }
     }
 });

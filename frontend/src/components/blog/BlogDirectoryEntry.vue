@@ -38,10 +38,10 @@ const index = computed(() => {
 })
 
 const jumpTo = () => {
+  scrollTo(props.entry);
   if (props.entry.top != undefined) {
     document.getElementById("blog-scrollable-container").scrollTop = props.entry.top
   }
-  scrollTo(props.entry);
 }
 
 const showUnderline = () => {

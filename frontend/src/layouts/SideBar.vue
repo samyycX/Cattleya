@@ -1,7 +1,7 @@
 <template>
   <div class="flex flex-col bg-theme-0 py-2 pb-24 lg:py-20">
-    <div class="flex flex-col mx-auto w-8/12 gap-3">
-      <img src="@/assets/img/logo.png" class="aspect-square rounded-xl"/> 
+    <div class="flex flex-col mx-auto w-8/12 gap-3 h-full">
+      <img src="@/assets/img/logo.png" class="aspect-square rounded-xl cursor-pointer" @click="router.push({ name: 'mainpage' })" /> 
       <div class="flex flex-row justify-around">
         <img src="@/assets/img/icon/github.svg" class="size-6 cursor-pointer" @click="toGithub"/>
         <img src="@/assets/img/icon/discord.svg" class="size-6 cursor-pointer" @click="toDiscord"/>
@@ -9,7 +9,7 @@
       </div>
       <div class="flex flex-row gap-2 text-left">
         <UserCircleIcon class="size-6 text-theme-5" />
-        <p class="text-theme-5">samyyc</p>
+        <p class="text-theme-5 cursor-pointer hover:underline underline-offset-4" @click="toLoginOrCenter">{{ currentUser ? currentUser.nickname : "点击登入" }}</p>
       </div>
       <MyTimezoneClock />
       <div class="flex flex-row gap-2 text-left">
@@ -21,10 +21,10 @@
         <p class="text-theme-5">China, Shanghai</p>
       </div>
       <HeartRate />
-    </div>
-    <NavigatorEntries class="w-8/12 mx-auto mt-28"/>
-    <div class="mt-auto">
-      <p class="text-theme-5">2024 samyyc.dev</p>
+      <NavigatorEntries class="w-8/12 mx-auto mt-28"/>
+      <div class="mt-auto">
+        <p class="text-theme-5">2024 samyyc.dev</p>
+      </div>
     </div>
   </div>
 </template>
@@ -36,8 +36,14 @@ import { computed } from 'vue';
 import HeartRate from '@/components/general/HeartRate.vue';
 import MyTimezoneClock from '@/components/general/MyTimezoneClock.vue';
 import NavigatorEntries from '@/components/layout/NavigatorEntries.vue';
+import { useUserStore } from '@/stores/users';
+import { useRouter } from 'vue-router';
+import { storeToRefs } from 'pinia';
 
 const survivedDays = computed(() => parseInt((new Date() - new Date("2008-05-08 16:30:00")) / (1000*60*60*24)))
+const router = useRouter()
+const userStore = useUserStore()
+const { currentUser } = storeToRefs(userStore)
 
 const toGithub = () => {
   window.open("https://github.com/samyycX")
@@ -48,6 +54,19 @@ const toDiscord = () => {
 const toEmail = () => {
   window.open("mailto:3356207189@qq.com")
 }
+const toLoginOrCenter = () => {
+  if (currentUser.value) {
+    router.push({ name: 'usercenter' })
+  } else {
+    router.push({ name: 'login' })
+  }
+}
 </script>
+
+<style scoped>
+::-webkit-scrollbar {
+  display: none;
+}
+</style>
 
 

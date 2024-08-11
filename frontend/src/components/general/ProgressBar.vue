@@ -7,6 +7,9 @@
                 <p :style="`color: ${statusColor}`" class=" text-xs md:text-md">{{ props.task.progress == 'success' ? "#".repeat(CHAR_NUM) : "#".repeat(parseInt(props.task.progress/100*CHAR_NUM)) }}</p>
                 <p class="text-theme-5 text-xs md:text-md">{{ "-".repeat(CHAR_NUM - parseInt(props.task.progress/100*CHAR_NUM)) }}</p>
             </div>
+            <div class="" v-else>
+                <p class="leading-none text-red-700 text-xs">{{  props.task.msg }}</p>
+            </div>
         </div>
     </div>
 </template>

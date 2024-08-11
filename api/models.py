@@ -88,7 +88,7 @@ class UserSerializer(serializers.ModelSerializer):
     avatar = AvatarField(many=False, read_only=True)
 
     class Meta:
-        fields = ("id", "username", "nickname", "avatar", "email", "phone", "date_joined")
+        fields = ("id", "username", "nickname", "avatar", "email", "phone", "date_joined", "is_staff")
         model = User
 
 
